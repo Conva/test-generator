@@ -52,8 +52,8 @@ export const operationsToCode = (collection: FixtureCollection) => {
   code += `\n${testSetupSpaces}let databaseClient = createTestClient()\n`;
   collection.fixtures.map(fixture => {
     let testName = fixture.testName || "NO_TEST_NAME_GIVEN";
-    if (!/^[a-zA-Z]+$/g.test(testName)) {
-      throw new Error("testName cannot have any characters but letters");
+    if (!/^[a-zA-Z\-]+$/g.test(testName)) {
+      throw new Error("testName cannot have any characters but letters and dashes");
     }
     code += `
      [<Test>]
@@ -64,7 +64,7 @@ export const operationsToCode = (collection: FixtureCollection) => {
       code += `${operationToCode(operation, { ...collection, testName })}`;
     });
   });
-  writeFileSync(`${collection.testPath}/${namespace}.fs`, code, {
+  writeFileSync(`${collection.testPath}/${namespace}.Test.fs`, code, {
     encoding: "utf8"
   });
   return code;

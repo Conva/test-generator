@@ -55,15 +55,15 @@ exports.operationsToCode = function (collection) {
     code += "\n" + testSetupSpaces + "let databaseClient = createTestClient()\n";
     collection.fixtures.map(function (fixture) {
         var testName = fixture.testName || "NO_TEST_NAME_GIVEN";
-        if (!/^[a-zA-Z]+$/g.test(testName)) {
-            throw new Error("testName cannot have any characters but letters");
+        if (!/^[a-zA-Z\-]+$/g.test(testName)) {
+            throw new Error("testName cannot have any characters but letters and dashes");
         }
         code += "\n     [<Test>]\n     let ``" + namespace + "::" + testName + "``() =\n    ";
         fixture.operations.forEach(function (operation) {
             code += "" + operationToCode(operation, __assign(__assign({}, collection), { testName: testName }));
         });
     });
-    fs_1.writeFileSync(collection.testPath + "/" + namespace + ".fs", code, {
+    fs_1.writeFileSync(collection.testPath + "/" + namespace + ".Test.fs", code, {
         encoding: "utf8"
     });
     return code;
