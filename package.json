@@ -1,0 +1,26 @@
+{
+  "name": "test-generator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "build/test-generator.js",
+  "module": "build/test-generator.js",
+  "scripts": {
+    "test": "jest",
+    "build": "rm -rf build && cd src && tsc",
+    "start": "npm run build && node build/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "json-schema-faker": "^0.5.0-rc19"
+  },
+  "devDependencies": {
+    "@babel/preset-typescript": "^7.6.0",
+    "@types/jest": "^24.0.19",
+    "@types/node": "^12.7.8",
+    "jest": "^24.9.0",
+    "ts-jest": "^24.1.0",
+    "typescript": "^3.5.3"
+  }
+}
