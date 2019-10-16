@@ -42,9 +42,14 @@ test("send object post", function () {
                 statusCode: 200
             };
         }
-    }, []).state;
-    var PhoneNumber = fixture.variables["CodeInput"]["PhoneNumber"];
+    }, [
+        {
+            from: ".PhoneNumber",
+            to: { variableName: ".SomeVariable.Other", type: "variable" }
+        }
+    ]).state;
     var Code = fixture.variables["CodeInput"]["Code"];
+    var PhoneNumber = fixture.variables["CodeInput"]["PhoneNumber"];
     expect(fixture).toEqual({
         testName: "SampleTest",
         operations: [
@@ -58,7 +63,7 @@ test("send object post", function () {
                     },
                     statusCode: 200
                 },
-                postBody: { Code: Code, PhoneNumber: PhoneNumber }
+                postBody: { Code: Code, PhoneNumber: "Hello" }
             }
         ],
         variables: {

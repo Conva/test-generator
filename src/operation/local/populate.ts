@@ -13,7 +13,7 @@ export interface VariablePopulateOperation {
 export interface BothPopulateOperation<DatabaseType extends string> {
   type: "both";
   databaseName: DatabaseType;
-  variableName: DatabaseType;
+  variableName: string;
   item?: {};
 }
 

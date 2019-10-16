@@ -32,7 +32,8 @@ export interface FixtureCollection<
   namespace?: string;
   preTestCode?: (namespace: string) => string;
   testPath?: string;
-  assetPath?: string;
+  controllerPath?: string;
+  assetPath: string;
   fixtures: Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>[];
 }
 
@@ -175,11 +176,10 @@ export const TestFixture = <
         const parameter = parameters[parameterName];
 
         if (parameter) {
-          const parameterValue = getParameterValue<
-            DatabaseType,
-            ResponseType,
-            EndpointType
-          >(parameter, currentState);
+          const parameterValue = getParameterValue<DatabaseType, ResponseType>(
+            parameter,
+            currentState
+          );
           endpoint = endpoint.replace(`{${parameterValue}}`, parameterValue);
         } else {
           throw new Error(`Invalid parameter name ${parameter}`);
@@ -220,9 +220,9 @@ export const TestFixture = <
           claims: operation.claims,
           expected: operation.expected(currentState)
         });
+        break;
     }
 
-    currentState;
     return TestFixture(schemas, currentState);
   };
 

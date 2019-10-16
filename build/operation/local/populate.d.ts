@@ -11,7 +11,7 @@ export interface VariablePopulateOperation {
 export interface BothPopulateOperation<DatabaseType extends string> {
     type: "both";
     databaseName: DatabaseType;
-    variableName: DatabaseType;
+    variableName: string;
     item?: {};
 }
 export declare type PopulateOperation<SchemaType extends string, DatabaseType extends string> = (DatabasePopulateOperation<DatabaseType> | VariablePopulateOperation | BothPopulateOperation<DatabaseType>) & {

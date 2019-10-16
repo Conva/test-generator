@@ -16,7 +16,7 @@ var request_generator_1 = require("../request-generator");
 var testBodySpaces = new Array(12 + 1).join(" ");
 var testSetupSpaces = new Array(5 + 1).join(" ");
 var operationToCode = function (operation, _a) {
-    var testName = _a.testName, assetPath = _a.assetPath;
+    var testName = _a.testName, testPath = _a.testPath, assetPath = _a.assetPath;
     switch (operation.operationType) {
         case "database": {
             switch (operation.type) {
@@ -38,13 +38,13 @@ var operationToCode = function (operation, _a) {
             }
         }
         case "controller": {
-            var jsonPath = (assetPath || "NO_SAVE_PATH_GIVEN") + "/" + testName + ".json";
-            if (assetPath) {
-                fs_1.writeFileSync(jsonPath, JSON.stringify(request_generator_1.testRequestFrom(operation)), {
+            var assetFilePath = assetPath + "/" + testName + ".json";
+            if (testPath) {
+                fs_1.writeFileSync(testPath + "/" + assetFilePath, JSON.stringify(request_generator_1.testRequestFrom(operation)), {
                     encoding: "utf8"
                 });
             }
-            return "\n" + testBodySpaces + "testController \"" + jsonPath + "\"";
+            return "\n" + testBodySpaces + "testController \"" + assetFilePath + "\"";
         }
         case "comment": {
             return "\n" + testBodySpaces + "// " + operation.comment + "\"";
@@ -68,8 +68,8 @@ exports.operationsToCode = function (collection) {
             code += "" + operationToCode(operation, __assign(__assign({}, collection), { testName: testName }));
         });
     });
-    if (collection.testPath) {
-        fs_1.writeFileSync(collection.testPath + "/" + namespace + ".Test.fs", code, {
+    if (collection.testPath && collection.controllerPath) {
+        fs_1.writeFileSync(collection.testPath + "/" + collection.controllerPath + "/" + namespace + ".Test.fs", code, {
             encoding: "utf8"
         });
     }

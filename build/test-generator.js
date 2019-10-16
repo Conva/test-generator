@@ -114,8 +114,8 @@ exports.TestFixture = function (schemas, initialState) {
                     claims: operation.claims,
                     expected: operation.expected(currentState)
                 });
+                break;
         }
-        currentState;
         return exports.TestFixture(schemas, currentState);
     };
     var comment = function (comment) {

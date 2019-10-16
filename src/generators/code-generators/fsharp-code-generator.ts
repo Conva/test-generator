@@ -8,7 +8,11 @@ const testSetupSpaces = new Array(5 + 1).join(" ");
 
 const operationToCode = <DatabaseType extends string, ResponseType extends {}>(
   operation: CodeOperation<DatabaseType, ResponseType>,
-  { testName, assetPath }: { testName: string; assetPath?: string }
+  {
+    testName,
+    testPath,
+    assetPath
+  }: { testName: string; assetPath: string; testPath?: string }
 ) => {
   switch (operation.operationType) {
     case "database": {
@@ -33,13 +37,17 @@ const operationToCode = <DatabaseType extends string, ResponseType extends {}>(
       }
     }
     case "controller": {
-      let jsonPath = `${assetPath || `NO_SAVE_PATH_GIVEN`}/${testName}.json`;
-      if (assetPath) {
-        writeFileSync(jsonPath, JSON.stringify(testRequestFrom(operation)), {
-          encoding: "utf8"
-        });
+      let assetFilePath = `${assetPath}/${testName}.json`;
+      if (testPath) {
+        writeFileSync(
+          `${testPath}/${assetFilePath}`,
+          JSON.stringify(testRequestFrom(operation)),
+          {
+            encoding: "utf8"
+          }
+        );
       }
-      return `\n${testBodySpaces}testController "${jsonPath}"`;
+      return `\n${testBodySpaces}testController "${assetFilePath}"`;
     }
     case "comment": {
       return `\n${testBodySpaces}// ${operation.comment}"`;
@@ -80,13 +88,20 @@ export const operationsToCode = <
     `;
 
     fixture.state.operations.forEach(operation => {
-      code += `${operationToCode(operation, { ...collection, testName })}`;
+      code += `${operationToCode(operation, {
+        ...collection,
+        testName,
+      })}`;
     });
   });
-  if (collection.testPath) {
-    writeFileSync(`${collection.testPath}/${namespace}.Test.fs`, code, {
-      encoding: "utf8"
-    });
+  if (collection.testPath && collection.controllerPath) {
+    writeFileSync(
+      `${collection.testPath}/${collection.controllerPath}/${namespace}.Test.fs`,
+      code,
+      {
+        encoding: "utf8"
+      }
+    );
   }
 
   return code;

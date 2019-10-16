@@ -22,7 +22,8 @@ export interface FixtureCollection<SchemaType extends string, DatabaseType exten
     namespace?: string;
     preTestCode?: (namespace: string) => string;
     testPath?: string;
-    assetPath?: string;
+    controllerPath?: string;
+    assetPath: string;
     fixtures: Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>[];
 }
 export interface Fixture<SchemaType extends string, DatabaseType extends string, ResponseType, EndpointType extends string> {

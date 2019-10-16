@@ -44,10 +44,15 @@ test("send object post", () => {
         };
       }
     },
-    []
+    [
+      {
+        from: ".PhoneNumber",
+        to: { variableName: ".SomeVariable.Other", type: "variable" }
+      }
+    ]
   ).state;
-  const PhoneNumber = fixture.variables["CodeInput"]["PhoneNumber"];
   const Code = fixture.variables["CodeInput"]["Code"];
+  const PhoneNumber = fixture.variables["CodeInput"]["PhoneNumber"];
 
   expect(fixture).toEqual({
     testName: "SampleTest",
@@ -62,7 +67,7 @@ test("send object post", () => {
           },
           statusCode: 200
         },
-        postBody: { Code, PhoneNumber }
+        postBody: { Code, PhoneNumber : "Hello" }
       }
     ],
     variables: {
@@ -258,7 +263,7 @@ test("clear all variables", () => {
 });
 
 test("comment", () => {
-  const fixture = TestFixture(sampleSchema).comment("Hello World").state
+  const fixture = TestFixture(sampleSchema).comment("Hello World").state;
   expect(fixture).toEqual({
     variables: {},
     operations: [{ operationType: "comment", comment: "Hello World" }]

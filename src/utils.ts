@@ -7,7 +7,6 @@ import { FixtureState, Schema } from "./test-generator";
 export const generateType = <
   DatabaseType extends string,
   ResponseType extends {},
-  EndpointType extends string
 >(
   schema: Schema,
   currentState: FixtureState<DatabaseType, ResponseType>,
@@ -36,7 +35,6 @@ export const generateType = <
 export const getParameterValue = <
   DatabaseType extends string,
   ResponseType extends {},
-  EndpointType extends string
 >(
   parameter: ParameterType,
   currentState: FixtureState<DatabaseType, ResponseType>
