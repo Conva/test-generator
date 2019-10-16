@@ -6,8 +6,12 @@ import { FixtureCollection } from "../test-generator";
 const testBodySpaces = new Array(12 + 1).join(" ");
 const testSetupSpaces = new Array(5 + 1).join(" ");
 
-const operationToCode = (
-  operation: Operation,
+const operationToCode = <
+  DatabaseType extends string,
+  ResponseType extends {},
+  EndpointType extends string
+>(
+  operation: Operation<DatabaseType, ResponseType, EndpointType>,
   { testName, assetPath }: { testName: string; assetPath: string }
 ) => {
   switch (operation.operationType) {
@@ -42,7 +46,19 @@ const operationToCode = (
   }
 };
 
-export const operationsToCode = (collection: FixtureCollection) => {
+export const operationsToCode = <
+  SchemaType extends string,
+  DatabaseType extends string,
+  ResponseType extends {},
+  EndpointType extends string
+>(
+  collection: FixtureCollection<
+    SchemaType,
+    DatabaseType,
+    ResponseType,
+    EndpointType
+  >
+) => {
   let namespace = collection.namespace || "NO_TEST_NAMESPACE_GIVEN";
   if (!/^[a-zA-Z]+$/g.test(namespace)) {
     throw new Error("namespace cannot have any characters but letters");
@@ -51,16 +67,18 @@ export const operationsToCode = (collection: FixtureCollection) => {
 
   code += `\n${testSetupSpaces}let databaseClient = createTestClient()\n`;
   collection.fixtures.map(fixture => {
-    let testName = fixture.testName || "NO_TEST_NAME_GIVEN";
+    let testName = fixture.state.testName || "NO_TEST_NAME_GIVEN";
     if (!/^[a-zA-Z\-]+$/g.test(testName)) {
-      throw new Error("testName cannot have any characters but letters and dashes");
+      throw new Error(
+        "testName cannot have any characters but letters and dashes"
+      );
     }
     code += `
      [<Test>]
      let \`\`${namespace}::${testName}\`\`() =
     `;
 
-    fixture.operations.forEach(operation => {
+    fixture.state.operations.forEach(operation => {
       code += `${operationToCode(operation, { ...collection, testName })}`;
     });
   });

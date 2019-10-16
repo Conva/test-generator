@@ -1,18 +1,18 @@
 import { Mutation } from "./mutations";
 import { FixtureState, Schema } from "./test-generator";
-export declare const generateType: (schema: Schema, currentState: FixtureState, mutations: Mutation[]) => {};
+export declare const generateType: <DatabaseType extends string, ResponseType_1 extends {}, EndpointType extends string>(schema: Schema, currentState: FixtureState<DatabaseType, ResponseType_1, EndpointType>, mutations: Mutation[]) => {};
 export declare type DatabaseKeyType = "RangeKey" | "HashKey" | "Combined";
-export interface GetItemDatabaseOperation {
+export interface GetItemDatabaseOperation<DatabaseType extends string> {
     type: "get-item";
-    databaseName: string;
+    databaseName: DatabaseType;
     key: {
         type: DatabaseKeyType;
         value: string[];
     };
 }
-export interface AddItemDatabaseOperation {
+export interface AddItemDatabaseOperation<DatabaseType extends string> {
     type: "add-item";
-    databaseName: string;
+    databaseName: DatabaseType;
     item: {};
     itemType: string;
 }
@@ -29,17 +29,17 @@ export interface VariableClear {
     name: "All" | string;
 }
 export declare type ClearOp = DatabaseClear | VariableClear;
-export declare type DatabaseOperation = (GetItemDatabaseOperation | AddItemDatabaseOperation | DeleteTableDatabaseOperation) & {
+export declare type DatabaseOperation<DatabaseType extends string> = (GetItemDatabaseOperation<DatabaseType> | AddItemDatabaseOperation<DatabaseType> | DeleteTableDatabaseOperation) & {
     operationType: "database";
 };
-export interface SendOperation {
+export interface SendOperation<ResponseType extends {}, EndpointType extends string> {
     operationType: "send";
     sent: {};
     expected: {
-        body: {};
+        body: ResponseType;
         statusCode: number;
     };
-    endpoint: string;
+    endpoint: EndpointType;
     claims: {};
 }
-export declare type Operation = DatabaseOperation | SendOperation;
+export declare type Operation<DatabaseType extends string, ResponseType extends {}, EndpointType extends string> = DatabaseOperation<DatabaseType> | SendOperation<ResponseType, EndpointType>;

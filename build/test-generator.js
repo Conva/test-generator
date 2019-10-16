@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var operation_1 = require("./operation");
+var utils_1 = require("./utils");
 exports.TestFixture = function (schemas, initialState) {
     if (initialState === void 0) { initialState = {
         operations: [],
@@ -8,7 +9,7 @@ exports.TestFixture = function (schemas, initialState) {
     }; }
     var currentState = initialState;
     var setVariable = function (generatedType, variableName) {
-        currentState.variables[variableName] = generatedType;
+        currentState.variables = utils_1.setNested(currentState.variables, variableName, generatedType);
     };
     var clear = function (op) {
         var deleteDatabase = function (op) {
@@ -41,9 +42,6 @@ exports.TestFixture = function (schemas, initialState) {
     };
     var populate = function (type, operation, mutations) {
         if (mutations === void 0) { mutations = []; }
-        if (typeof type !== "string") {
-            throw new Error("typeof type has to be string");
-        }
         var addToDatabase = function (generatedType, genType, databaseName) {
             currentState.operations.push({
                 operationType: "database",
@@ -75,9 +73,6 @@ exports.TestFixture = function (schemas, initialState) {
     var send = function (type, endpoint, expected, options, mutations) {
         if (options === void 0) { options = {}; }
         if (mutations === void 0) { mutations = []; }
-        if (typeof type !== "string") {
-            throw new Error("typeof type has to be string");
-        }
         var schema = schemas[type];
         if (schema === undefined) {
             throw new Error("Trying to populate with invalid GenType: " + type);
@@ -100,6 +95,6 @@ exports.TestFixture = function (schemas, initialState) {
     var terminate = function () {
         return currentState;
     };
-    return { clear: clear, populate: populate, send: send, terminate: terminate };
+    return { state: currentState, clear: clear, populate: populate, send: send, terminate: terminate };
 };
 //# sourceMappingURL=test-generator.js.map

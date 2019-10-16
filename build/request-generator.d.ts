@@ -13,7 +13,7 @@ export declare type ProxyOptions = {
     additionalHeaders?: IncomingHttpHeaders;
     additionalClaims?: {};
 } & UserSpecifiedProxyOptions;
-export declare const testRequestFrom: ({ claims, sent, endpoint, expected }: SendOperation) => {
+export declare const testRequestFrom: <ResponseType_1 extends {}, EndpointType extends string>({ claims, sent, endpoint, expected }: SendOperation<ResponseType_1, EndpointType>) => {
     response: {
         statusCode: number;
         headers: {};

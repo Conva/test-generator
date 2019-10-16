@@ -20,7 +20,7 @@ const sampleSchema = fetchSchemas([
 ]);
 
 test("send object", () => {
-  const fixture = TestFixture(sampleSchema, {
+  const fixture = TestFixture<string, string, {}, string>(sampleSchema, {
     operations: [],
     variables: { SomeVariable: { Other: "Hello" } },
     testName: "SampleTest"
@@ -28,7 +28,7 @@ test("send object", () => {
     .send(
       "PhoneVerificationInput",
       "/endpoint/url",
-      (currentState: FixtureState) => {
+      (currentState) => {
         return {
           body: {
             OkResponse: {
@@ -41,7 +41,7 @@ test("send object", () => {
           statusCode: 200
         };
       },
-      { variableName: "CodeInput" },
+      { variableName: ".CodeInput" },
       []
     )
     .terminate();
@@ -82,7 +82,7 @@ test("populate both with given variable", () => {
       {
         type: "both",
         databaseName: "SomeDatabaseName",
-        variableName: "SomeVariableName"
+        variableName: ".SomeVariableName"
       },
       [
         {
@@ -119,7 +119,7 @@ test("populate both with given object", () => {
       {
         type: "both",
         databaseName: "SomeDatabaseName",
-        variableName: "SomeVariableName"
+        variableName: ".SomeVariableName"
       },
       [{ from: ".PhoneNumber", to: { type: "object", object: "notOriginal" } }]
     )
@@ -145,7 +145,7 @@ test("populate both", () => {
     .populate("PhoneVerificationInput", {
       type: "both",
       databaseName: "SomeDatabaseName",
-      variableName: "SomeVariableName"
+      variableName: ".SomeVariableName"
     })
     .terminate();
   // @ts-ignore

@@ -15,12 +15,12 @@ export type ProxyOptions = {
   additionalClaims?: {};
 } & UserSpecifiedProxyOptions;
 
-export const testRequestFrom = ({
+export const testRequestFrom = <ResponseType extends {}, EndpointType extends string>({
   claims,
   sent,
   endpoint,
   expected
-}: SendOperation) => {
+}: SendOperation<ResponseType, EndpointType>) => {
   return {
     ...requestFrom({ additionalClaims: claims, body: sent, path: endpoint }),
     response: {

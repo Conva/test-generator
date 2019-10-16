@@ -1,6 +1,6 @@
-export interface DatabasePopulateOperation {
+export interface DatabasePopulateOperation<DatabaseType extends string> {
   type: "database";
-  databaseName: string;
+  databaseName: DatabaseType;
   item?: {};
 }
 
@@ -10,14 +10,14 @@ export interface VariablePopulateOperation {
   item?: {};
 }
 
-export interface BothPopulateOperation {
+export interface BothPopulateOperation<DatabaseType extends string> {
   type: "both";
-  databaseName: string;
-  variableName: string;
+  databaseName: DatabaseType;
+  variableName: DatabaseType;
   item?: {};
 }
 
-export type PopulateOperation =
-  | DatabasePopulateOperation
+export type PopulateOperation<DatabaseType extends string> =
+  | DatabasePopulateOperation<DatabaseType>
   | VariablePopulateOperation
-  | BothPopulateOperation;
+  | BothPopulateOperation<DatabaseType>;

@@ -37,7 +37,7 @@ test("send object", function () {
             },
             statusCode: 200
         };
-    }, { variableName: "CodeInput" }, [])
+    }, { variableName: ".CodeInput" }, [])
         .terminate();
     var PhoneNumber = fixture.variables["CodeInput"]["PhoneNumber"];
     var Code = fixture.variables["CodeInput"]["Code"];
@@ -72,7 +72,7 @@ test("populate both with given variable", function () {
         .populate("PhoneVerificationInput", {
         type: "both",
         databaseName: "SomeDatabaseName",
-        variableName: "SomeVariableName"
+        variableName: ".SomeVariableName"
     }, [
         {
             from: ".PhoneNumber",
@@ -104,7 +104,7 @@ test("populate both with given object", function () {
         .populate("PhoneVerificationInput", {
         type: "both",
         databaseName: "SomeDatabaseName",
-        variableName: "SomeVariableName"
+        variableName: ".SomeVariableName"
     }, [{ from: ".PhoneNumber", to: { type: "object", object: "notOriginal" } }])
         .terminate();
     // @ts-ignore
@@ -127,7 +127,7 @@ test("populate both", function () {
         .populate("PhoneVerificationInput", {
         type: "both",
         databaseName: "SomeDatabaseName",
-        variableName: "SomeVariableName"
+        variableName: ".SomeVariableName"
     })
         .terminate();
     // @ts-ignore

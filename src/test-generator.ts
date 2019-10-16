@@ -5,6 +5,7 @@ import {
   Operation
 } from "./operation";
 import { PopulateOperation } from "./populate";
+import { setNested } from "./utils";
 
 export interface Schema {
   $schema: string;
@@ -15,50 +16,78 @@ export interface Schema {
   properties: {};
 }
 
-export interface FixtureState {
-  operations: Operation[];
+export interface FixtureState<
+  DatabaseType extends string,
+  ResponseType extends {},
+  EndpointType extends string
+> {
+  operations: Operation<DatabaseType, ResponseType, EndpointType>[];
   testName?: string;
   variables: { [variableName: string]: any };
 }
 
-export interface FixtureCollection {
+export interface FixtureCollection<
+  SchemaType extends string,
+  DatabaseType extends string,
+  ResponseType extends {},
+  EndpointType extends string
+> {
   namespace?: string;
   preTestCode?: (namespace: string) => string;
   testPath: string;
   assetPath: string;
-  fixtures: FixtureState[];
+  fixtures: Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>[];
 }
 
 ////////////////////////////////////////////////////
 
-export interface Fixture<T> {
-  clear: (op?: ClearOperation) => Fixture<T>;
+export interface Fixture<
+  SchemaType extends string,
+  DatabaseType extends string,
+  ResponseType,
+  EndpointType extends string
+> {
+  state: FixtureState<DatabaseType, ResponseType, EndpointType>;
+  clear: (
+    op?: ClearOperation
+  ) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
   populate: (
-    type: T,
-    operation: PopulateOperation,
+    type: SchemaType,
+    operation: PopulateOperation<DatabaseType>,
     mutations?: Mutation[]
-  ) => Fixture<T>;
+  ) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
   send: (
-    type: T,
-    endpoint: string,
-    expected: (currentState: FixtureState) => { body: {}; statusCode: number },
+    type: SchemaType,
+    endpoint: EndpointType,
+    expected: (
+      currentState: FixtureState<DatabaseType, ResponseType, EndpointType>
+    ) => { body: ResponseType; statusCode: number },
     options?: { item?: {}; variableName?: string; claims?: {} },
     mutations?: Mutation[]
-  ) => Fixture<T>;
-  terminate: () => FixtureState;
+  ) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
+  terminate: () => FixtureState<DatabaseType, ResponseType, EndpointType>;
 }
 
-export const TestFixture = <T>(
+export const TestFixture = <
+  SchemaType extends string,
+  DatabaseType extends string,
+  ResponseType,
+  EndpointType extends string
+>(
   schemas: { [schemaName: string]: Schema },
-  initialState: FixtureState = {
+  initialState: FixtureState<DatabaseType, ResponseType, EndpointType> = {
     operations: [],
     variables: {}
   }
-): Fixture<T> => {
+): Fixture<SchemaType, DatabaseType, ResponseType, EndpointType> => {
   const currentState = initialState;
 
   const setVariable = (generatedType: {}, variableName: string) => {
-    currentState.variables[variableName] = generatedType;
+    currentState.variables = setNested(
+      currentState.variables,
+      variableName,
+      generatedType
+    );
   };
 
   const clear = (op?: ClearOperation) => {
@@ -91,18 +120,14 @@ export const TestFixture = <T>(
   };
 
   const populate = (
-    type: T,
-    operation: PopulateOperation,
+    type: SchemaType,
+    operation: PopulateOperation<DatabaseType>,
     mutations: { from: string; to: MutationTo }[] = []
   ) => {
-    if (typeof type !== "string") {
-      throw new Error("typeof type has to be string");
-    }
-
     const addToDatabase = (
       generatedType: {},
       genType: string,
-      databaseName: string
+      databaseName: DatabaseType
     ) => {
       currentState.operations.push({
         operationType: "database",
@@ -136,15 +161,14 @@ export const TestFixture = <T>(
   };
 
   const send = (
-    type: T,
-    endpoint: string,
-    expected: (currentState: FixtureState) => { body: {}; statusCode: number },
+    type: SchemaType,
+    endpoint: EndpointType,
+    expected: (
+      currentState: FixtureState<DatabaseType, ResponseType, EndpointType>
+    ) => { body: ResponseType; statusCode: number },
     options: { item?: {}; variableName?: string; claims?: {} } = {},
     mutations: Mutation[] = []
   ) => {
-    if (typeof type !== "string") {
-      throw new Error("typeof type has to be string");
-    }
     const schema = schemas[type];
     if (schema === undefined) {
       throw new Error(`Trying to populate with invalid GenType: ${type}`);
@@ -172,5 +196,5 @@ export const TestFixture = <T>(
     return currentState;
   };
 
-  return { clear, populate, send, terminate };
+  return { state: currentState, clear, populate, send, terminate };
 };
