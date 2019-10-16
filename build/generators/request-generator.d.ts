@@ -15,15 +15,12 @@ export declare type ProxyOptions = {
 } & UserSpecifiedProxyOptions;
 export declare const testRequestFrom: <ResponseType_1 extends {}>({ endpoint, expected, claims, type, postBody }: ControllerOperation<ResponseType_1>) => {
     response: {
-        statusCode: {
-            body?: ResponseType_1 | undefined;
-            statusCode: number;
-        };
+        statusCode: number;
         headers: {};
         multiValueHeaders: {
             "Content-Type": string[];
         };
-        body: string;
+        body: ResponseType_1 | undefined;
         isBase64Encoded: boolean;
     };
     request: {

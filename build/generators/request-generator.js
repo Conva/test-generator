@@ -21,12 +21,12 @@ exports.testRequestFrom = function (_a) {
         method: type,
         body: postBody
     })), { response: {
-            statusCode: expected,
+            statusCode: expected.statusCode,
             headers: {},
             multiValueHeaders: {
                 "Content-Type": ["application/json"]
             },
-            body: "\"" + JSON.stringify(expected).replace(/"/gm, '\\"') + "\"",
+            body: expected.body,
             isBase64Encoded: false
         } });
 };

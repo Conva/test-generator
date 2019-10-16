@@ -30,7 +30,7 @@ export interface Fixture<SchemaType extends string, DatabaseType extends string,
     clear: (operation?: ClearOperation<DatabaseType>) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
     populate: (operation: PopulateOperation<SchemaType, DatabaseType>, mutations?: Mutation[]) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
     send: (operation: SendOperation<SchemaType, DatabaseType, ResponseType, EndpointType>, mutations?: Mutation[]) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
-    terminate: () => FixtureState<DatabaseType, ResponseType>;
+    comment: (comment: string) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
 }
 export declare const TestFixture: <SchemaType extends string, DatabaseType extends string, ResponseType_1, EndpointType extends string>(schemas: {
     [schemaName: string]: Schema;

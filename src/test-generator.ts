@@ -61,7 +61,9 @@ export interface Fixture<
     >,
     mutations?: Mutation[]
   ) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
-  terminate: () => FixtureState<DatabaseType, ResponseType>;
+  comment: (
+    comment: string
+  ) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
 }
 
 export const TestFixture = <
@@ -224,9 +226,13 @@ export const TestFixture = <
     return TestFixture(schemas, currentState);
   };
 
-  const terminate = () => {
-    return currentState;
+  const comment = (comment: string) => {
+    currentState.operations.push({
+      operationType: "comment",
+      comment
+    });
+    return TestFixture(schemas, currentState);
   };
 
-  return { state: currentState, clear, populate, send, terminate };
+  return { state: currentState, clear, populate, send, comment };
 };

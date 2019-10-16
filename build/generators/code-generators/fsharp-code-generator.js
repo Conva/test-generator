@@ -46,6 +46,9 @@ var operationToCode = function (operation, _a) {
             }
             return "\n" + testBodySpaces + "testController \"" + jsonPath + "\"";
         }
+        case "comment": {
+            return "\n" + testBodySpaces + "// " + operation.comment + "\"";
+        }
     }
 };
 exports.operationsToCode = function (collection) {

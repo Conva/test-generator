@@ -118,9 +118,13 @@ exports.TestFixture = function (schemas, initialState) {
         currentState;
         return exports.TestFixture(schemas, currentState);
     };
-    var terminate = function () {
-        return currentState;
+    var comment = function (comment) {
+        currentState.operations.push({
+            operationType: "comment",
+            comment: comment
+        });
+        return exports.TestFixture(schemas, currentState);
     };
-    return { state: currentState, clear: clear, populate: populate, send: send, terminate: terminate };
+    return { state: currentState, clear: clear, populate: populate, send: send, comment: comment };
 };
 //# sourceMappingURL=test-generator.js.map

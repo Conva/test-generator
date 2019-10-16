@@ -41,6 +41,9 @@ const operationToCode = <DatabaseType extends string, ResponseType extends {}>(
       }
       return `\n${testBodySpaces}testController "${jsonPath}"`;
     }
+    case "comment": {
+      return `\n${testBodySpaces}// ${operation.comment}"`;
+    }
   }
 };
 

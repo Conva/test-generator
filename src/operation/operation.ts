@@ -1,3 +1,4 @@
+import { CommentOperation } from "./code/comment";
 import { ControllerOperation } from "./code/controller";
 import { DatabaseOperation } from "./code/database";
 import { ClearOperation } from "./local/clear";
@@ -7,7 +8,10 @@ import { SendOperation } from "./local/send";
 export type CodeOperation<
   DatabaseType extends string,
   ResponseType extends {}
-> = DatabaseOperation<DatabaseType> | ControllerOperation<ResponseType>;
+> =
+  | DatabaseOperation<DatabaseType>
+  | ControllerOperation<ResponseType>
+  | CommentOperation;
 
 export type LocalOperation<
   SchemaType extends string,
