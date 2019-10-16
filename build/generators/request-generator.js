@@ -26,7 +26,7 @@ exports.testRequestFrom = function (_a) {
             multiValueHeaders: {
                 "Content-Type": ["application/json"]
             },
-            body: expected.body,
+            body: JSON.stringify(expected.body || {}),
             isBase64Encoded: false
         } });
 };

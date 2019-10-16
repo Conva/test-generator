@@ -20,7 +20,7 @@ export declare const testRequestFrom: <ResponseType_1 extends {}>({ endpoint, ex
         multiValueHeaders: {
             "Content-Type": string[];
         };
-        body: ResponseType_1 | undefined;
+        body: string;
         isBase64Encoded: boolean;
     };
     request: {

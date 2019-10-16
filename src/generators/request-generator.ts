@@ -36,7 +36,7 @@ export const testRequestFrom = <ResponseType extends {}>({
       multiValueHeaders: {
         "Content-Type": ["application/json"]
       },
-      body: expected.body,
+      body: JSON.stringify(expected.body || {}),
       isBase64Encoded: false
     }
   };
