@@ -37,11 +37,13 @@ var operationToCode = function (operation, _a) {
                 }
             }
         }
-        case "send": {
-            var jsonPath = assetPath + "/" + testName + ".json";
-            fs_1.writeFileSync(jsonPath, JSON.stringify(request_generator_1.testRequestFrom(operation)), {
-                encoding: "utf8"
-            });
+        case "controller": {
+            var jsonPath = (assetPath || "NO_SAVE_PATH_GIVEN") + "/" + testName + ".json";
+            if (assetPath) {
+                fs_1.writeFileSync(jsonPath, JSON.stringify(request_generator_1.testRequestFrom(operation)), {
+                    encoding: "utf8"
+                });
+            }
             return "\n" + testBodySpaces + "testController \"" + jsonPath + "\"";
         }
     }
@@ -63,9 +65,11 @@ exports.operationsToCode = function (collection) {
             code += "" + operationToCode(operation, __assign(__assign({}, collection), { testName: testName }));
         });
     });
-    fs_1.writeFileSync(collection.testPath + "/" + namespace + ".Test.fs", code, {
-        encoding: "utf8"
-    });
+    if (collection.testPath) {
+        fs_1.writeFileSync(collection.testPath + "/" + namespace + ".Test.fs", code, {
+            encoding: "utf8"
+        });
+    }
     return code;
 };
 //# sourceMappingURL=fsharp-code-generator.js.map

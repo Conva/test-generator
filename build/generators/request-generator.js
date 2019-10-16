@@ -12,14 +12,21 @@ var __assign = (this && this.__assign) || function () {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.testRequestFrom = function (_a) {
-    var claims = _a.claims, sent = _a.sent, endpoint = _a.endpoint, expected = _a.expected;
-    return __assign(__assign({}, exports.requestFrom({ additionalClaims: claims, body: sent, path: endpoint })), { response: {
-            statusCode: expected.statusCode,
+    var endpoint = _a.endpoint, expected = _a.expected, claims = _a.claims, type = _a.type, 
+    // @ts-ignore
+    postBody = _a.postBody;
+    return __assign(__assign({}, exports.requestFrom({
+        additionalClaims: claims,
+        path: endpoint,
+        method: type,
+        body: postBody
+    })), { response: {
+            statusCode: expected,
             headers: {},
             multiValueHeaders: {
                 "Content-Type": ["application/json"]
             },
-            body: JSON.stringify(JSON.stringify(expected.body)),
+            body: "\"" + JSON.stringify(expected).replace(/"/gm, '\\"') + "\"",
             isBase64Encoded: false
         } });
 };
@@ -39,7 +46,7 @@ exports.requestFrom = function (_a) {
             headers: headers
         },
         proxy: {
-            body: JSON.stringify(body) || null,
+            body: body ? JSON.stringify(body) : null,
             resource: resource,
             path: path,
             httpMethod: method,

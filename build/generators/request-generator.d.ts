@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import { IncomingHttpHeaders } from "http";
-import { SendOperation } from "./operation";
+import { ControllerOperation } from "../operation/code/controller";
 export interface UserSpecifiedProxyOptions {
     resource?: string;
     accountId?: string;
@@ -13,9 +13,12 @@ export declare type ProxyOptions = {
     additionalHeaders?: IncomingHttpHeaders;
     additionalClaims?: {};
 } & UserSpecifiedProxyOptions;
-export declare const testRequestFrom: <ResponseType_1 extends {}, EndpointType extends string>({ claims, sent, endpoint, expected }: SendOperation<ResponseType_1, EndpointType>) => {
+export declare const testRequestFrom: <ResponseType_1 extends {}>({ endpoint, expected, claims, type, postBody }: ControllerOperation<ResponseType_1>) => {
     response: {
-        statusCode: number;
+        statusCode: {
+            body?: ResponseType_1 | undefined;
+            statusCode: number;
+        };
         headers: {};
         multiValueHeaders: {
             "Content-Type": string[];

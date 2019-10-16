@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var operation_1 = require("./operation");
 var utils_1 = require("./utils");
 exports.TestFixture = function (schemas, initialState) {
     if (initialState === void 0) { initialState = {
@@ -11,21 +10,21 @@ exports.TestFixture = function (schemas, initialState) {
     var setVariable = function (generatedType, variableName) {
         currentState.variables = utils_1.setNested(currentState.variables, variableName, generatedType);
     };
-    var clear = function (op) {
-        var deleteDatabase = function (op) {
+    var clear = function (operation) {
+        var deleteDatabase = function (name) {
             currentState.operations.push({
                 operationType: "database",
                 type: "delete-table",
-                name: op ? op.name : "All"
+                name: name
             });
         };
         var clearVariables = function () {
             currentState.variables = {};
         };
-        if (op) {
-            switch (op.type) {
+        if (operation) {
+            switch (operation.type) {
                 case "database":
-                    deleteDatabase(op);
+                    deleteDatabase(operation.databaseName);
                     break;
                 case "variable":
                     clearVariables();
@@ -36,11 +35,11 @@ exports.TestFixture = function (schemas, initialState) {
         }
         else {
             clearVariables();
-            deleteDatabase();
+            deleteDatabase("All");
         }
         return exports.TestFixture(schemas, currentState);
     };
-    var populate = function (type, operation, mutations) {
+    var populate = function (operation, mutations) {
         if (mutations === void 0) { mutations = []; }
         var addToDatabase = function (generatedType, genType, databaseName) {
             currentState.operations.push({
@@ -51,45 +50,72 @@ exports.TestFixture = function (schemas, initialState) {
                 databaseName: databaseName
             });
         };
-        var schema = schemas[type];
+        var schema = schemas[operation.schema];
         if (schema === undefined) {
-            throw new Error("Trying to populate with invalid GenType: " + type);
+            throw new Error("Trying to populate with invalid GenType: " + operation.schema);
         }
-        var generatedType = operation.item || operation_1.generateType(schema, currentState, mutations);
+        var generatedType = operation.item || utils_1.generateType(schema, currentState, mutations);
         switch (operation.type) {
             case "database":
-                addToDatabase(generatedType, type, operation.databaseName);
+                addToDatabase(generatedType, operation.schema, operation.databaseName);
                 break;
             case "variable":
                 setVariable(generatedType, operation.variableName);
                 break;
             case "both":
                 setVariable(generatedType, operation.variableName);
-                addToDatabase(generatedType, type, operation.databaseName);
+                addToDatabase(generatedType, operation.schema, operation.databaseName);
                 break;
         }
         return exports.TestFixture(schemas, currentState);
     };
-    var send = function (type, endpoint, expected, options, mutations) {
-        if (options === void 0) { options = {}; }
+    var send = function (operation, mutations) {
         if (mutations === void 0) { mutations = []; }
-        var schema = schemas[type];
-        if (schema === undefined) {
-            throw new Error("Trying to populate with invalid GenType: " + type);
+        var endpoint = operation.endpoint;
+        var parameters = operation.parameters;
+        if (parameters) {
+            Object.keys(parameters).map(function (parameterName) {
+                var parameter = parameters[parameterName];
+                if (parameter) {
+                    var parameterValue = utils_1.getParameterValue(parameter, currentState);
+                    endpoint = endpoint.replace("{" + parameterValue + "}", parameterValue);
+                }
+                else {
+                    throw new Error("Invalid parameter name " + parameter);
+                }
+            });
         }
-        var generatedType = options.item
-            ? options.item
-            : operation_1.generateType(schema, currentState, mutations);
-        if (options.variableName !== undefined) {
-            setVariable(generatedType, options.variableName);
+        switch (operation.type) {
+            case "GET":
+                currentState.operations.push({
+                    operationType: "controller",
+                    type: "GET",
+                    claims: operation.claims,
+                    endpoint: endpoint,
+                    expected: operation.expected(currentState)
+                });
+                break;
+            case "POST":
+                var schema = schemas[operation.schema];
+                if (schema === undefined) {
+                    throw new Error("Trying to populate with invalid GenType: " + operation.schema);
+                }
+                var generatedType = operation.item
+                    ? operation.item
+                    : utils_1.generateType(schema, currentState, mutations);
+                if (operation.variableName !== undefined) {
+                    setVariable(generatedType, operation.variableName);
+                }
+                currentState.operations.push({
+                    operationType: "controller",
+                    type: "POST",
+                    endpoint: endpoint,
+                    postBody: generatedType,
+                    claims: operation.claims,
+                    expected: operation.expected(currentState)
+                });
         }
-        currentState.operations.push({
-            operationType: "send",
-            endpoint: endpoint,
-            claims: options.claims ? options.claims : {},
-            expected: expected(currentState),
-            sent: generatedType
-        });
+        currentState;
         return exports.TestFixture(schemas, currentState);
     };
     var terminate = function () {

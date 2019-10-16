@@ -1,11 +1,9 @@
 import { Mutation, MutationTo } from "./mutations";
-import {
-  ClearOp as ClearOperation,
-  generateType,
-  Operation
-} from "./operation";
-import { PopulateOperation } from "./populate";
-import { setNested } from "./utils";
+import { ClearOperation } from "./operation/local/clear";
+import { PopulateOperation } from "./operation/local/populate";
+import { SendOperation } from "./operation/local/send";
+import { CodeOperation } from "./operation/operation";
+import { generateType, getParameterValue, setNested } from "./utils";
 
 export interface Schema {
   $schema: string;
@@ -18,10 +16,9 @@ export interface Schema {
 
 export interface FixtureState<
   DatabaseType extends string,
-  ResponseType extends {},
-  EndpointType extends string
+  ResponseType extends {}
 > {
-  operations: Operation<DatabaseType, ResponseType, EndpointType>[];
+  operations: CodeOperation<DatabaseType, ResponseType>[];
   testName?: string;
   variables: { [variableName: string]: any };
 }
@@ -34,8 +31,8 @@ export interface FixtureCollection<
 > {
   namespace?: string;
   preTestCode?: (namespace: string) => string;
-  testPath: string;
-  assetPath: string;
+  testPath?: string;
+  assetPath?: string;
   fixtures: Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>[];
 }
 
@@ -47,25 +44,24 @@ export interface Fixture<
   ResponseType,
   EndpointType extends string
 > {
-  state: FixtureState<DatabaseType, ResponseType, EndpointType>;
+  state: FixtureState<DatabaseType, ResponseType>;
   clear: (
-    op?: ClearOperation
+    operation?: ClearOperation<DatabaseType>
   ) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
   populate: (
-    type: SchemaType,
-    operation: PopulateOperation<DatabaseType>,
+    operation: PopulateOperation<SchemaType, DatabaseType>,
     mutations?: Mutation[]
   ) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
   send: (
-    type: SchemaType,
-    endpoint: EndpointType,
-    expected: (
-      currentState: FixtureState<DatabaseType, ResponseType, EndpointType>
-    ) => { body: ResponseType; statusCode: number },
-    options?: { item?: {}; variableName?: string; claims?: {} },
+    operation: SendOperation<
+      SchemaType,
+      DatabaseType,
+      ResponseType,
+      EndpointType
+    >,
     mutations?: Mutation[]
   ) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
-  terminate: () => FixtureState<DatabaseType, ResponseType, EndpointType>;
+  terminate: () => FixtureState<DatabaseType, ResponseType>;
 }
 
 export const TestFixture = <
@@ -75,7 +71,7 @@ export const TestFixture = <
   EndpointType extends string
 >(
   schemas: { [schemaName: string]: Schema },
-  initialState: FixtureState<DatabaseType, ResponseType, EndpointType> = {
+  initialState: FixtureState<DatabaseType, ResponseType> = {
     operations: [],
     variables: {}
   }
@@ -90,21 +86,21 @@ export const TestFixture = <
     );
   };
 
-  const clear = (op?: ClearOperation) => {
-    const deleteDatabase = (op?: ClearOperation) => {
+  const clear = (operation?: ClearOperation<DatabaseType>) => {
+    const deleteDatabase = (name: string) => {
       currentState.operations.push({
         operationType: "database",
         type: "delete-table",
-        name: op ? op.name : "All"
+        name
       });
     };
     const clearVariables = () => {
       currentState.variables = {};
     };
-    if (op) {
-      switch (op.type) {
+    if (operation) {
+      switch (operation.type) {
         case "database":
-          deleteDatabase(op);
+          deleteDatabase(operation.databaseName);
           break;
         case "variable":
           clearVariables();
@@ -114,14 +110,13 @@ export const TestFixture = <
       }
     } else {
       clearVariables();
-      deleteDatabase();
+      deleteDatabase("All");
     }
     return TestFixture(schemas, currentState);
   };
 
   const populate = (
-    type: SchemaType,
-    operation: PopulateOperation<DatabaseType>,
+    operation: PopulateOperation<SchemaType, DatabaseType>,
     mutations: { from: string; to: MutationTo }[] = []
   ) => {
     const addToDatabase = (
@@ -138,22 +133,24 @@ export const TestFixture = <
       });
     };
 
-    const schema = schemas[type];
+    const schema = schemas[operation.schema];
     if (schema === undefined) {
-      throw new Error(`Trying to populate with invalid GenType: ${type}`);
+      throw new Error(
+        `Trying to populate with invalid GenType: ${operation.schema}`
+      );
     }
     const generatedType =
       operation.item || generateType(schema, currentState, mutations);
     switch (operation.type) {
       case "database":
-        addToDatabase(generatedType, type, operation.databaseName);
+        addToDatabase(generatedType, operation.schema, operation.databaseName);
         break;
       case "variable":
         setVariable(generatedType, operation.variableName);
         break;
       case "both":
         setVariable(generatedType, operation.variableName);
-        addToDatabase(generatedType, type, operation.databaseName);
+        addToDatabase(generatedType, operation.schema, operation.databaseName);
         break;
     }
 
@@ -161,34 +158,69 @@ export const TestFixture = <
   };
 
   const send = (
-    type: SchemaType,
-    endpoint: EndpointType,
-    expected: (
-      currentState: FixtureState<DatabaseType, ResponseType, EndpointType>
-    ) => { body: ResponseType; statusCode: number },
-    options: { item?: {}; variableName?: string; claims?: {} } = {},
+    operation: SendOperation<
+      SchemaType,
+      DatabaseType,
+      ResponseType,
+      EndpointType
+    >,
     mutations: Mutation[] = []
   ) => {
-    const schema = schemas[type];
-    if (schema === undefined) {
-      throw new Error(`Trying to populate with invalid GenType: ${type}`);
+    let endpoint = operation.endpoint as string;
+    const parameters = operation.parameters;
+    if (parameters) {
+      Object.keys(parameters).map(parameterName => {
+        const parameter = parameters[parameterName];
+
+        if (parameter) {
+          const parameterValue = getParameterValue<
+            DatabaseType,
+            ResponseType,
+            EndpointType
+          >(parameter, currentState);
+          endpoint = endpoint.replace(`{${parameterValue}}`, parameterValue);
+        } else {
+          throw new Error(`Invalid parameter name ${parameter}`);
+        }
+      });
     }
-    const generatedType = options.item
-      ? options.item
-      : generateType(schema, currentState, mutations);
 
-    if (options.variableName !== undefined) {
-      setVariable(generatedType, options.variableName);
+    switch (operation.type) {
+      case "GET":
+        currentState.operations.push({
+          operationType: "controller",
+          type: "GET",
+          claims: operation.claims,
+          endpoint,
+          expected: operation.expected(currentState)
+        });
+        break;
+      case "POST":
+        const schema = schemas[operation.schema];
+        if (schema === undefined) {
+          throw new Error(
+            `Trying to populate with invalid GenType: ${operation.schema}`
+          );
+        }
+
+        const generatedType = operation.item
+          ? operation.item
+          : generateType(schema, currentState, mutations);
+
+        if (operation.variableName !== undefined) {
+          setVariable(generatedType, operation.variableName);
+        }
+        currentState.operations.push({
+          operationType: "controller",
+          type: "POST",
+          endpoint,
+          postBody: generatedType,
+          claims: operation.claims,
+          expected: operation.expected(currentState)
+        });
     }
 
-    currentState.operations.push({
-      operationType: "send",
-      endpoint,
-      claims: options.claims ? options.claims : {},
-      expected: expected(currentState),
-      sent: generatedType
-    });
-
+    currentState;
     return TestFixture(schemas, currentState);
   };
 

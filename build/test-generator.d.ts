@@ -1,6 +1,8 @@
 import { Mutation } from "./mutations";
-import { ClearOp as ClearOperation, Operation } from "./operation";
-import { PopulateOperation } from "./populate";
+import { ClearOperation } from "./operation/local/clear";
+import { PopulateOperation } from "./operation/local/populate";
+import { SendOperation } from "./operation/local/send";
+import { CodeOperation } from "./operation/operation";
 export interface Schema {
     $schema: string;
     title: string;
@@ -9,8 +11,8 @@ export interface Schema {
     required: string[];
     properties: {};
 }
-export interface FixtureState<DatabaseType extends string, ResponseType extends {}, EndpointType extends string> {
-    operations: Operation<DatabaseType, ResponseType, EndpointType>[];
+export interface FixtureState<DatabaseType extends string, ResponseType extends {}> {
+    operations: CodeOperation<DatabaseType, ResponseType>[];
     testName?: string;
     variables: {
         [variableName: string]: any;
@@ -19,24 +21,17 @@ export interface FixtureState<DatabaseType extends string, ResponseType extends 
 export interface FixtureCollection<SchemaType extends string, DatabaseType extends string, ResponseType extends {}, EndpointType extends string> {
     namespace?: string;
     preTestCode?: (namespace: string) => string;
-    testPath: string;
-    assetPath: string;
+    testPath?: string;
+    assetPath?: string;
     fixtures: Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>[];
 }
 export interface Fixture<SchemaType extends string, DatabaseType extends string, ResponseType, EndpointType extends string> {
-    state: FixtureState<DatabaseType, ResponseType, EndpointType>;
-    clear: (op?: ClearOperation) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
-    populate: (type: SchemaType, operation: PopulateOperation<DatabaseType>, mutations?: Mutation[]) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
-    send: (type: SchemaType, endpoint: EndpointType, expected: (currentState: FixtureState<DatabaseType, ResponseType, EndpointType>) => {
-        body: ResponseType;
-        statusCode: number;
-    }, options?: {
-        item?: {};
-        variableName?: string;
-        claims?: {};
-    }, mutations?: Mutation[]) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
-    terminate: () => FixtureState<DatabaseType, ResponseType, EndpointType>;
+    state: FixtureState<DatabaseType, ResponseType>;
+    clear: (operation?: ClearOperation<DatabaseType>) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
+    populate: (operation: PopulateOperation<SchemaType, DatabaseType>, mutations?: Mutation[]) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
+    send: (operation: SendOperation<SchemaType, DatabaseType, ResponseType, EndpointType>, mutations?: Mutation[]) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
+    terminate: () => FixtureState<DatabaseType, ResponseType>;
 }
 export declare const TestFixture: <SchemaType extends string, DatabaseType extends string, ResponseType_1, EndpointType extends string>(schemas: {
     [schemaName: string]: Schema;
-}, initialState?: FixtureState<DatabaseType, ResponseType_1, EndpointType>) => Fixture<SchemaType, DatabaseType, ResponseType_1, EndpointType>;
+}, initialState?: FixtureState<DatabaseType, ResponseType_1>) => Fixture<SchemaType, DatabaseType, ResponseType_1, EndpointType>;

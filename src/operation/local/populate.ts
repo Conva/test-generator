@@ -17,7 +17,10 @@ export interface BothPopulateOperation<DatabaseType extends string> {
   item?: {};
 }
 
-export type PopulateOperation<DatabaseType extends string> =
+export type PopulateOperation<
+  SchemaType extends string,
+  DatabaseType extends string
+> = (
   | DatabasePopulateOperation<DatabaseType>
   | VariablePopulateOperation
-  | BothPopulateOperation<DatabaseType>;
+  | BothPopulateOperation<DatabaseType>) & { schema: SchemaType };

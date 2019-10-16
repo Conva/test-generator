@@ -1,5 +1,5 @@
 import { IncomingHttpHeaders } from "http";
-import { SendOperation } from "./operation";
+import { ControllerOperation } from "../operation/code/controller";
 
 export interface UserSpecifiedProxyOptions {
   resource?: string;
@@ -15,21 +15,28 @@ export type ProxyOptions = {
   additionalClaims?: {};
 } & UserSpecifiedProxyOptions;
 
-export const testRequestFrom = <ResponseType extends {}, EndpointType extends string>({
-  claims,
-  sent,
+export const testRequestFrom = <ResponseType extends {}>({
   endpoint,
-  expected
-}: SendOperation<ResponseType, EndpointType>) => {
+  expected,
+  claims,
+  type,
+  // @ts-ignore
+  postBody
+}: ControllerOperation<ResponseType>) => {
   return {
-    ...requestFrom({ additionalClaims: claims, body: sent, path: endpoint }),
+    ...requestFrom({
+      additionalClaims: claims,
+      path: endpoint,
+      method: type,
+      body: postBody
+    }),
     response: {
-      statusCode: expected.statusCode,
+      statusCode: expected,
       headers: {},
       multiValueHeaders: {
         "Content-Type": ["application/json"]
       },
-      body: JSON.stringify(JSON.stringify(expected.body)),
+      body: `"${JSON.stringify(expected).replace(/"/gm, '\\"')}"`,
       isBase64Encoded: false
     }
   };
@@ -78,7 +85,7 @@ export const requestFrom = ({
       headers
     },
     proxy: {
-      body: JSON.stringify(body) || null,
+      body: body ? JSON.stringify(body) : null,
       resource,
       path,
       httpMethod: method,

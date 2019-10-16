@@ -1,4 +1,60 @@
-import { Schema } from "./test-generator";
+// @ts-ignore
+import jsf from "json-schema-faker";
+import { Mutation } from "./mutations";
+import { ParameterType } from "./operation/local/send";
+import { FixtureState, Schema } from "./test-generator";
+
+export const generateType = <
+  DatabaseType extends string,
+  ResponseType extends {},
+  EndpointType extends string
+>(
+  schema: Schema,
+  currentState: FixtureState<DatabaseType, ResponseType>,
+  mutations: Mutation[]
+) => {
+  let generatedType = jsf.generate(schema) as {};
+  mutations.forEach(({ from, to }) => {
+    switch (to.type) {
+      case "variable":
+        generatedType = setNested(
+          generatedType,
+          from,
+          getNested(currentState.variables, to.variableName)
+        );
+        break;
+      case "object":
+        generatedType = setNested(generatedType, from, to.object);
+        break;
+      default:
+        throw new Error("Mutation operation not specified");
+    }
+  });
+  return generatedType;
+};
+
+export const getParameterValue = <
+  DatabaseType extends string,
+  ResponseType extends {},
+  EndpointType extends string
+>(
+  parameter: ParameterType,
+  currentState: FixtureState<DatabaseType, ResponseType>
+) => {
+  switch (parameter.type) {
+    case "literal":
+      return parameter.literal;
+    case "variable":
+      const nestedString = getNested(
+        currentState.variables,
+        parameter.variableName
+      );
+      if (typeof nestedString !== "string") {
+        throw new Error("Variable is not a string");
+      }
+      return nestedString;
+  }
+};
 
 export const fetchSchemas = (schemaItems: Schema[]) => {
   const schema: { [type: string]: Schema } = {};

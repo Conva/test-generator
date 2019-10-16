@@ -1,18 +1,14 @@
 import { writeFileSync } from "fs";
-import { Operation } from "../operation";
+import { CodeOperation } from "../../operation/operation";
+import { FixtureCollection } from "../../test-generator";
 import { testRequestFrom } from "../request-generator";
-import { FixtureCollection } from "../test-generator";
 
 const testBodySpaces = new Array(12 + 1).join(" ");
 const testSetupSpaces = new Array(5 + 1).join(" ");
 
-const operationToCode = <
-  DatabaseType extends string,
-  ResponseType extends {},
-  EndpointType extends string
->(
-  operation: Operation<DatabaseType, ResponseType, EndpointType>,
-  { testName, assetPath }: { testName: string; assetPath: string }
+const operationToCode = <DatabaseType extends string, ResponseType extends {}>(
+  operation: CodeOperation<DatabaseType, ResponseType>,
+  { testName, assetPath }: { testName: string; assetPath?: string }
 ) => {
   switch (operation.operationType) {
     case "database": {
@@ -36,11 +32,13 @@ const operationToCode = <
         }
       }
     }
-    case "send": {
-      let jsonPath = `${assetPath}/${testName}.json`;
-      writeFileSync(jsonPath, JSON.stringify(testRequestFrom(operation)), {
-        encoding: "utf8"
-      });
+    case "controller": {
+      let jsonPath = `${assetPath || `NO_SAVE_PATH_GIVEN`}/${testName}.json`;
+      if (assetPath) {
+        writeFileSync(jsonPath, JSON.stringify(testRequestFrom(operation)), {
+          encoding: "utf8"
+        });
+      }
       return `\n${testBodySpaces}testController "${jsonPath}"`;
     }
   }
@@ -82,8 +80,11 @@ export const operationsToCode = <
       code += `${operationToCode(operation, { ...collection, testName })}`;
     });
   });
-  writeFileSync(`${collection.testPath}/${namespace}.Test.fs`, code, {
-    encoding: "utf8"
-  });
+  if (collection.testPath) {
+    writeFileSync(`${collection.testPath}/${namespace}.Test.fs`, code, {
+      encoding: "utf8"
+    });
+  }
+
   return code;
 };

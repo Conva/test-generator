@@ -19,25 +19,31 @@ var sampleSchema = utils_1.fetchSchemas([
         }
     }
 ]);
-test("send object", function () {
+test("send object post", function () {
     var fixture = test_generator_1.TestFixture(sampleSchema, {
         operations: [],
         variables: { SomeVariable: { Other: "Hello" } },
         testName: "SampleTest"
     })
-        .send("PhoneVerificationInput", "/endpoint/url", function (currentState) {
-        return {
-            body: {
-                OkResponse: {
-                    SetCodeIsAllGood: {
-                        Code: currentState.variables["CodeInput"]["Code"],
-                        Other: currentState.variables["SomeVariable"]["Other"]
+        .send({
+        endpoint: "/endpoint/url",
+        type: "POST",
+        schema: "PhoneVerificationInput",
+        variableName: ".CodeInput",
+        expected: function (currentState) {
+            return {
+                body: {
+                    OkResponse: {
+                        SetCodeIsAllGood: {
+                            Code: currentState.variables["CodeInput"]["Code"],
+                            Other: currentState.variables["SomeVariable"]["Other"]
+                        }
                     }
-                }
-            },
-            statusCode: 200
-        };
-    }, { variableName: ".CodeInput" }, [])
+                },
+                statusCode: 200
+            };
+        }
+    }, [])
         .terminate();
     var PhoneNumber = fixture.variables["CodeInput"]["PhoneNumber"];
     var Code = fixture.variables["CodeInput"]["Code"];
@@ -45,21 +51,75 @@ test("send object", function () {
         testName: "SampleTest",
         operations: [
             {
-                operationType: "send",
+                operationType: "controller",
+                type: "POST",
                 endpoint: "/endpoint/url",
-                claims: {},
                 expected: {
                     body: {
                         OkResponse: { SetCodeIsAllGood: { Code: Code, Other: "Hello" } }
                     },
                     statusCode: 200
                 },
-                sent: { Code: Code, PhoneNumber: PhoneNumber }
+                postBody: { Code: Code, PhoneNumber: PhoneNumber }
             }
         ],
         variables: {
             SomeVariable: { Other: "Hello" },
             CodeInput: { Code: Code, PhoneNumber: PhoneNumber }
+        }
+    });
+});
+test("send object get", function () {
+    var fixture = test_generator_1.TestFixture(sampleSchema, {
+        operations: [],
+        variables: {
+            SomeVariable: { Other: "Hello" },
+            ParameterVariable: { Other: "variableParam" }
+        },
+        testName: "SampleTest"
+    })
+        .send({
+        endpoint: "/endpoint/url/{variableParam}/{literalParam}",
+        type: "GET",
+        parameters: {
+            literalParam: { literal: "literalParam", type: "literal" },
+            variableParam: {
+                type: "variable",
+                variableName: ".ParameterVariable.Other"
+            }
+        },
+        expected: function (currentState) {
+            return {
+                body: {
+                    OkResponse: {
+                        SetCodeIsAllGood: {
+                            Other: currentState.variables["SomeVariable"]["Other"]
+                        }
+                    }
+                },
+                statusCode: 200
+            };
+        }
+    }, [])
+        .terminate();
+    expect(fixture).toEqual({
+        testName: "SampleTest",
+        operations: [
+            {
+                operationType: "controller",
+                type: "GET",
+                endpoint: "/endpoint/url/variableParam/literalParam",
+                expected: {
+                    body: {
+                        OkResponse: { SetCodeIsAllGood: { Other: "Hello" } }
+                    },
+                    statusCode: 200
+                }
+            }
+        ],
+        variables: {
+            SomeVariable: { Other: "Hello" },
+            ParameterVariable: { Other: "variableParam" }
         }
     });
 });
@@ -69,7 +129,8 @@ test("populate both with given variable", function () {
         variables: { SomeObject: { Hello: { World: "notOriginal" } } },
         testName: "SampleTest"
     })
-        .populate("PhoneVerificationInput", {
+        .populate({
+        schema: "PhoneVerificationInput",
         type: "both",
         databaseName: "SomeDatabaseName",
         variableName: ".SomeVariableName"
@@ -101,7 +162,8 @@ test("populate both with given variable", function () {
 });
 test("populate both with given object", function () {
     var fixture = test_generator_1.TestFixture(sampleSchema)
-        .populate("PhoneVerificationInput", {
+        .populate({
+        schema: "PhoneVerificationInput",
         type: "both",
         databaseName: "SomeDatabaseName",
         variableName: ".SomeVariableName"
@@ -124,7 +186,8 @@ test("populate both with given object", function () {
 });
 test("populate both", function () {
     var fixture = test_generator_1.TestFixture(sampleSchema)
-        .populate("PhoneVerificationInput", {
+        .populate({
+        schema: "PhoneVerificationInput",
         type: "both",
         databaseName: "SomeDatabaseName",
         variableName: ".SomeVariableName"
@@ -148,7 +211,10 @@ test("populate both", function () {
     });
 });
 test("clear all", function () {
-    var fixture = test_generator_1.TestFixture(sampleSchema)
+    var fixture = test_generator_1.TestFixture(sampleSchema, {
+        operations: [],
+        variables: { a: 1, b: 2 }
+    })
         .clear()
         .terminate();
     expect(fixture).toEqual({
@@ -159,19 +225,25 @@ test("clear all", function () {
     });
 });
 test("clear specific database", function () {
-    var fixture = test_generator_1.TestFixture(sampleSchema)
-        .clear({ type: "database", name: "SomeOther" })
+    var fixture = test_generator_1.TestFixture(sampleSchema, {
+        operations: [],
+        variables: { a: 1, b: 2 }
+    })
+        .clear({ type: "database", databaseName: "SomeOther" })
         .terminate();
     expect(fixture).toEqual({
-        variables: {},
+        variables: { a: 1, b: 2 },
         operations: [
             { operationType: "database", type: "delete-table", name: "SomeOther" }
         ]
     });
 });
 test("clear all variables", function () {
-    var fixture = test_generator_1.TestFixture(sampleSchema)
-        .clear({ type: "variable", name: "All" })
+    var fixture = test_generator_1.TestFixture(sampleSchema, {
+        operations: [],
+        variables: { a: 1, b: 2 }
+    })
+        .clear({ type: "variable", variableName: "All" })
         .terminate();
     expect(fixture).toEqual({
         variables: {},

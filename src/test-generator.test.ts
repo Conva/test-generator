@@ -1,4 +1,4 @@
-import { FixtureState, TestFixture } from "./test-generator";
+import { TestFixture } from "./test-generator";
 import { fetchSchemas } from "./utils";
 
 const sampleSchema = fetchSchemas([
@@ -19,29 +19,32 @@ const sampleSchema = fetchSchemas([
   }
 ]);
 
-test("send object", () => {
+test("send object post", () => {
   const fixture = TestFixture<string, string, {}, string>(sampleSchema, {
     operations: [],
     variables: { SomeVariable: { Other: "Hello" } },
     testName: "SampleTest"
   })
     .send(
-      "PhoneVerificationInput",
-      "/endpoint/url",
-      (currentState) => {
-        return {
-          body: {
-            OkResponse: {
-              SetCodeIsAllGood: {
-                Code: currentState.variables["CodeInput"]["Code"],
-                Other: currentState.variables["SomeVariable"]["Other"]
+      {
+        endpoint: "/endpoint/url",
+        type: "POST",
+        schema: "PhoneVerificationInput",
+        variableName: ".CodeInput",
+        expected: currentState => {
+          return {
+            body: {
+              OkResponse: {
+                SetCodeIsAllGood: {
+                  Code: currentState.variables["CodeInput"]["Code"],
+                  Other: currentState.variables["SomeVariable"]["Other"]
+                }
               }
-            }
-          },
-          statusCode: 200
-        };
+            },
+            statusCode: 200
+          };
+        }
       },
-      { variableName: ".CodeInput" },
       []
     )
     .terminate();
@@ -52,21 +55,80 @@ test("send object", () => {
     testName: "SampleTest",
     operations: [
       {
-        operationType: "send",
+        operationType: "controller",
+        type: "POST",
         endpoint: "/endpoint/url",
-        claims: {},
         expected: {
           body: {
             OkResponse: { SetCodeIsAllGood: { Code, Other: "Hello" } }
           },
           statusCode: 200
         },
-        sent: { Code, PhoneNumber }
+        postBody: { Code, PhoneNumber }
       }
     ],
     variables: {
       SomeVariable: { Other: "Hello" },
       CodeInput: { Code, PhoneNumber }
+    }
+  });
+});
+
+test("send object get", () => {
+  const fixture = TestFixture<string, string, {}, string>(sampleSchema, {
+    operations: [],
+    variables: {
+      SomeVariable: { Other: "Hello" },
+      ParameterVariable: { Other: "variableParam" }
+    },
+    testName: "SampleTest"
+  })
+    .send(
+      {
+        endpoint: "/endpoint/url/{variableParam}/{literalParam}",
+        type: "GET",
+        parameters: {
+          literalParam: { literal: "literalParam", type: "literal" },
+          variableParam: {
+            type: "variable",
+            variableName: ".ParameterVariable.Other"
+          }
+        },
+        expected: currentState => {
+          return {
+            body: {
+              OkResponse: {
+                SetCodeIsAllGood: {
+                  Other: currentState.variables["SomeVariable"]["Other"]
+                }
+              }
+            },
+            statusCode: 200
+          };
+        }
+      },
+      []
+    )
+    .terminate();
+
+  expect(fixture).toEqual({
+    testName: "SampleTest",
+    operations: [
+      {
+        operationType: "controller",
+        type: "GET",
+        endpoint: "/endpoint/url/variableParam/literalParam",
+        expected: {
+          body: {
+            OkResponse: { SetCodeIsAllGood: { Other: "Hello" } }
+          },
+          statusCode: 200
+        }
+      }
+    ],
+    variables: {
+      SomeVariable: { Other: "Hello" },
+      ParameterVariable: { Other: "variableParam" }
     }
   });
 });
@@ -78,8 +140,8 @@ test("populate both with given variable", () => {
     testName: "SampleTest"
   })
     .populate(
-      "PhoneVerificationInput",
       {
+        schema: "PhoneVerificationInput",
         type: "both",
         databaseName: "SomeDatabaseName",
         variableName: ".SomeVariableName"
@@ -115,8 +177,8 @@ test("populate both with given variable", () => {
 test("populate both with given object", () => {
   const fixture = TestFixture(sampleSchema)
     .populate(
-      "PhoneVerificationInput",
       {
+        schema: "PhoneVerificationInput",
         type: "both",
         databaseName: "SomeDatabaseName",
         variableName: ".SomeVariableName"
@@ -142,7 +204,8 @@ test("populate both with given object", () => {
 
 test("populate both", () => {
   const fixture = TestFixture(sampleSchema)
-    .populate("PhoneVerificationInput", {
+    .populate({
+      schema: "PhoneVerificationInput",
       type: "both",
       databaseName: "SomeDatabaseName",
       variableName: ".SomeVariableName"
@@ -168,7 +231,10 @@ test("populate both", () => {
 });
 
 test("clear all", () => {
-  const fixture = TestFixture(sampleSchema)
+  const fixture = TestFixture(sampleSchema, {
+    operations: [],
+    variables: { a: 1, b: 2 }
+  })
     .clear()
     .terminate();
   expect(fixture).toEqual({
@@ -180,12 +246,15 @@ test("clear all", () => {
 });
 
 test("clear specific database", () => {
-  const fixture = TestFixture(sampleSchema)
-    .clear({ type: "database", name: "SomeOther" })
+  const fixture = TestFixture(sampleSchema, {
+    operations: [],
+    variables: { a: 1, b: 2 }
+  })
+    .clear({ type: "database", databaseName: "SomeOther" })
     .terminate();
 
   expect(fixture).toEqual({
-    variables: {},
+    variables: { a: 1, b: 2 },
     operations: [
       { operationType: "database", type: "delete-table", name: "SomeOther" }
     ]
@@ -193,8 +262,11 @@ test("clear specific database", () => {
 });
 
 test("clear all variables", () => {
-  const fixture = TestFixture(sampleSchema)
-    .clear({ type: "variable", name: "All" })
+  const fixture = TestFixture(sampleSchema, {
+    operations: [],
+    variables: { a: 1, b: 2 }
+  })
+    .clear({ type: "variable", variableName: "All" })
     .terminate();
 
   expect(fixture).toEqual({
