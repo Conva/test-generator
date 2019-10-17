@@ -22,10 +22,10 @@ exports.generateType = function (schema, currentState, mutations) {
         var from = _a.from, to = _a.to;
         switch (to.type) {
             case "variable":
-                generatedType = exports.setNested(generatedType, from, exports.getNested(currentState.variables, to.variableName));
+                generatedType = exports.setNested(generatedType, from, exports.getNested(currentState.variables, to.variable));
                 break;
-            case "object":
-                generatedType = exports.setNested(generatedType, from, to.object);
+            case "literal":
+                generatedType = exports.setNested(generatedType, from, to.literal);
                 break;
             default:
                 throw new Error("Mutation operation not specified");
@@ -38,7 +38,7 @@ exports.getParameterValue = function (parameter, currentState) {
         case "literal":
             return parameter.literal;
         case "variable":
-            var nestedString = exports.getNested(currentState.variables, parameter.variableName);
+            var nestedString = exports.getNested(currentState.variables, parameter.variable);
             if (typeof nestedString !== "string") {
                 throw new Error("Variable is not a string");
             }

@@ -15,10 +15,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+var currentEndpoint; // for debug reasons only
 exports.testRequestFrom = function (_a) {
     var endpoint = _a.endpoint, expected = _a.expected, claims = _a.claims, type = _a.type, 
     // @ts-ignore
     postBody = _a.postBody;
+    currentEndpoint = endpoint;
     return __assign(__assign({}, exports.requestFrom({
         claims: claims,
         path: endpoint,
@@ -36,12 +38,17 @@ exports.testRequestFrom = function (_a) {
 };
 exports.TokenSettings = {};
 exports.getJWTToken = function (claims, signingKey, options) {
-    if (signingKey || exports.TokenSettings.SIGNING_SECRET) {
-        return jsonwebtoken_1.default.sign(claims, 
-        // @ts-ignore
-        signingKey || exports.TokenSettings.SIGNING_SECRET, options);
+    try {
+        if (signingKey || exports.TokenSettings.SIGNING_SECRET) {
+            return jsonwebtoken_1.default.sign(claims, 
+            // @ts-ignore
+            signingKey || exports.TokenSettings.SIGNING_SECRET, __assign(__assign({}, options), { noTimestamp: true }));
+        }
     }
-    throw new Error("Signing token not given");
+    catch (e) {
+        throw new Error("JWT token failed to create: claims " + JSON.stringify(claims) + ", signingKey : " + (signingKey ||
+            exports.TokenSettings.SIGNING_SECRET) + ", options : " + JSON.stringify(options) + ", currentEndpoint : " + currentEndpoint);
+    }
 };
 /**
  * Create payload for AWS lamda mock server request

@@ -18,11 +18,11 @@ const operationToCode = <DatabaseType extends string, ResponseType extends {}>(
     case "database": {
       switch (operation.type) {
         case "add-item": {
-          let variableName = `temp${operation.databaseName}`;
+          let variableName = `temp${operation.database}`;
           let result = `\n${testBodySpaces}let ${variableName} = Compact.deserialize<${
             operation.itemType
           }> ${JSON.stringify(JSON.stringify(operation.item))}`;
-          result += `\n${testBodySpaces}(DatabaseService.add (Tables.${operation.databaseName} databaseClient) ${variableName} None).Wait()`;
+          result += `\n${testBodySpaces}(DatabaseService.add (Tables.${operation.database} databaseClient) ${variableName} None).Wait()`;
           return result;
         }
         case "delete-table": {
@@ -53,16 +53,21 @@ const operationToCode = <DatabaseType extends string, ResponseType extends {}>(
       return `\n${testBodySpaces}// ${operation.comment}"`;
     }
 
-    case "testingEnvironment": {
-      Object.keys(operation.testingEnvironment).map(() => {
-        if (operation.testingEnvironment.guid) {
-          return `\n${testBodySpaces}changeGuidTo "${operation.testingEnvironment.guid}"`;
+    case "environment": {
+      const { time, guid } = operation.environment;
+      let code = "";
+      Object.keys(operation.environment).map(key => {
+        if (guid && key === "guid") {
+          code += `\n${testBodySpaces}changeGuidTo "${guid}"`;
         }
 
-        if (operation.testingEnvironment.time) {
-          return `\n${testBodySpaces}changeTimeTo "${operation.testingEnvironment.time.toISOString()}"`;
+        if (time && key === "time") {
+          code += `\n${testBodySpaces}changeTimeTo "${
+            typeof time === "string" ? time : time.toISOString()
+          }"`;
         }
       });
+      return code;
     }
   }
 };

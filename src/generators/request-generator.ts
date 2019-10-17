@@ -16,6 +16,8 @@ export type ProxyOptions = {
   claims?: {};
 } & UserSpecifiedProxyOptions;
 
+let currentEndpoint: string | undefined; // for debug reasons only
+
 export const testRequestFrom = <ResponseType extends {}>({
   endpoint,
   expected,
@@ -24,6 +26,7 @@ export const testRequestFrom = <ResponseType extends {}>({
   // @ts-ignore
   postBody
 }: ControllerOperation<ResponseType>) => {
+  currentEndpoint = endpoint;
   return {
     ...requestFrom({
       claims,
@@ -50,15 +53,25 @@ export const getJWTToken = (
   signingKey?: jwt.Secret,
   options?: jwt.SignOptions
 ) => {
-  if (signingKey || TokenSettings.SIGNING_SECRET) {
-    return jwt.sign(
-      claims,
-      // @ts-ignore
-      signingKey || TokenSettings.SIGNING_SECRET,
-      options
+  try {
+    if (signingKey || TokenSettings.SIGNING_SECRET) {
+      return jwt.sign(
+        claims,
+        // @ts-ignore
+        signingKey || TokenSettings.SIGNING_SECRET,
+        { ...options, noTimestamp: true }
+      );
+    }
+  } catch (e) {
+    throw new Error(
+      `JWT token failed to create: claims ${JSON.stringify(
+        claims
+      )}, signingKey : ${signingKey ||
+        TokenSettings.SIGNING_SECRET}, options : ${JSON.stringify(
+        options
+      )}, currentEndpoint : ${currentEndpoint}`
     );
   }
-  throw new Error("Signing token not given");
 };
 
 /**

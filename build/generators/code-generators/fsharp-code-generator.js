@@ -21,9 +21,9 @@ var operationToCode = function (operation, _a) {
         case "database": {
             switch (operation.type) {
                 case "add-item": {
-                    var variableName = "temp" + operation.databaseName;
+                    var variableName = "temp" + operation.database;
                     var result = "\n" + testBodySpaces + "let " + variableName + " = Compact.deserialize<" + operation.itemType + "> " + JSON.stringify(JSON.stringify(operation.item));
-                    result += "\n" + testBodySpaces + "(DatabaseService.add (Tables." + operation.databaseName + " databaseClient) " + variableName + " None).Wait()";
+                    result += "\n" + testBodySpaces + "(DatabaseService.add (Tables." + operation.database + " databaseClient) " + variableName + " None).Wait()";
                     return result;
                 }
                 case "delete-table": {
@@ -49,15 +49,18 @@ var operationToCode = function (operation, _a) {
         case "comment": {
             return "\n" + testBodySpaces + "// " + operation.comment + "\"";
         }
-        case "testingEnvironment": {
-            Object.keys(operation.testingEnvironment).map(function () {
-                if (operation.testingEnvironment.guid) {
-                    return "\n" + testBodySpaces + "changeGuidTo \"" + operation.testingEnvironment.guid + "\"";
+        case "environment": {
+            var _b = operation.environment, time_1 = _b.time, guid_1 = _b.guid;
+            var code_1 = "";
+            Object.keys(operation.environment).map(function (key) {
+                if (guid_1 && key === "guid") {
+                    code_1 += "\n" + testBodySpaces + "changeGuidTo \"" + guid_1 + "\"";
                 }
-                if (operation.testingEnvironment.time) {
-                    return "\n" + testBodySpaces + "changeTimeTo \"" + operation.testingEnvironment.time.toISOString() + "\"";
+                if (time_1 && key === "time") {
+                    code_1 += "\n" + testBodySpaces + "changeTimeTo \"" + (typeof time_1 === "string" ? time_1 : time_1.toISOString()) + "\"";
                 }
             });
+            return code_1;
         }
     }
 };

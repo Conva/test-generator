@@ -1,32 +1,24 @@
 import { FixtureState } from "../../test-generator";
-export interface SendOperationOptions<DatabaseType extends string, ResponseType extends {}, EndpointType extends string> {
-    claims?: {};
+import { PassingType } from "../passing";
+export interface SendOperationOptions<DatabaseType extends string, ResponseType extends {}> {
+    claims?: (currentState: FixtureState<DatabaseType, ResponseType>) => {};
     expected: (currentState: FixtureState<DatabaseType, ResponseType>) => {
         body?: ResponseType;
         statusCode: number;
     };
 }
-export interface VariableParameterType {
-    type: "variable";
-    variableName: string;
-}
-export interface LiteralParameterType {
-    type: "literal";
-    literal: string;
-}
-export declare type ParameterType = LiteralParameterType | VariableParameterType;
-export declare type GetOperation<DatabaseType extends string, ResponseType extends {}, EndpointType extends string> = {
+export declare type GetOperation<DatabaseType extends string, ResponseType extends {}> = {
     type: "GET";
-} & SendOperationOptions<DatabaseType, ResponseType, EndpointType>;
-export declare type PostOperation<SchemaType extends string, DatabaseType extends string, ResponseType extends {}, EndpointType extends string> = {
+} & SendOperationOptions<DatabaseType, ResponseType>;
+export declare type PostOperation<SchemaType extends string, DatabaseType extends string, ResponseType extends {}> = {
     type: "POST";
-    variableName?: string;
+    variable?: string;
     schema: SchemaType;
     item?: {};
-} & SendOperationOptions<DatabaseType, ResponseType, EndpointType>;
-export declare type SendOperation<SchemaType extends string, DatabaseType extends string, ResponseType extends {}, EndpointType extends string> = (GetOperation<DatabaseType, ResponseType, EndpointType> | PostOperation<SchemaType, DatabaseType, ResponseType, EndpointType>) & {
+} & SendOperationOptions<DatabaseType, ResponseType>;
+export declare type SendOperation<SchemaType extends string, DatabaseType extends string, ResponseType extends {}, EndpointType extends string> = (GetOperation<DatabaseType, ResponseType> | PostOperation<SchemaType, DatabaseType, ResponseType>) & {
     endpoint: EndpointType;
     parameters?: {
-        [parameterName: string]: ParameterType;
+        [parameterName: string]: PassingType<string>;
     };
 };

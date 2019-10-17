@@ -2,13 +2,13 @@ export type DatabaseKeyType = "RangeKey" | "HashKey" | "Combined";
 
 export interface GetItemDatabaseOperation<DatabaseType extends string> {
   type: "get-item";
-  databaseName: DatabaseType;
+  database: DatabaseType;
   key: { type: DatabaseKeyType; value: string[] };
 }
 
 export interface AddItemDatabaseOperation<DatabaseType extends string> {
   type: "add-item";
-  databaseName: DatabaseType;
+  database: DatabaseType;
   item: {};
   itemType: string;
 }

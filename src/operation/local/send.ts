@@ -1,46 +1,32 @@
 import { FixtureState } from "../../test-generator";
-
+import { PassingType } from "../passing";
 export interface SendOperationOptions<
   DatabaseType extends string,
-  ResponseType extends {},
-  EndpointType extends string
+  ResponseType extends {}
 > {
-  claims?: {};
+  claims?: (currentState: FixtureState<DatabaseType, ResponseType>) => {};
   expected: (
     currentState: FixtureState<DatabaseType, ResponseType>
   ) => { body?: ResponseType; statusCode: number };
 }
 
-export interface VariableParameterType {
-  type: "variable";
-  variableName: string;
-}
-export interface LiteralParameterType {
-  type: "literal";
-  literal: string;
-}
-
-export type ParameterType = LiteralParameterType | VariableParameterType;
-
 export type GetOperation<
   DatabaseType extends string,
-  ResponseType extends {},
-  EndpointType extends string
+  ResponseType extends {}
 > = {
   type: "GET";
-} & SendOperationOptions<DatabaseType, ResponseType, EndpointType>;
+} & SendOperationOptions<DatabaseType, ResponseType>;
 
 export type PostOperation<
   SchemaType extends string,
   DatabaseType extends string,
-  ResponseType extends {},
-  EndpointType extends string
+  ResponseType extends {}
 > = {
   type: "POST";
-  variableName?: string;
+  variable?: string;
   schema: SchemaType;
   item?: {};
-} & SendOperationOptions<DatabaseType, ResponseType, EndpointType>;
+} & SendOperationOptions<DatabaseType, ResponseType>;
 
 export type SendOperation<
   SchemaType extends string,
@@ -48,8 +34,8 @@ export type SendOperation<
   ResponseType extends {},
   EndpointType extends string
 > = (
-  | GetOperation<DatabaseType, ResponseType, EndpointType>
-  | PostOperation<SchemaType, DatabaseType, ResponseType, EndpointType>) & {
+  | GetOperation<DatabaseType, ResponseType>
+  | PostOperation<SchemaType, DatabaseType, ResponseType>) & {
   endpoint: EndpointType;
-  parameters?: { [parameterName: string]: ParameterType };
+  parameters?: { [parameterName: string]: PassingType<string> };
 };

@@ -29,7 +29,7 @@ test("send object post", () => {
       endpoint: "/endpoint/url",
       type: "POST",
       schema: "PhoneVerificationInput",
-      variableName: ".CodeInput",
+      variable: ".CodeInput",
       expected: currentState => {
         return {
           body: {
@@ -47,7 +47,7 @@ test("send object post", () => {
     [
       {
         from: ".PhoneNumber",
-        to: { variableName: ".SomeVariable.Other", type: "variable" }
+        to: { variable: ".SomeVariable.Other", type: "variable" }
       }
     ]
   ).state;
@@ -93,7 +93,7 @@ test("send object get", () => {
         literalParam: { literal: "literalParam", type: "literal" },
         variableParam: {
           type: "variable",
-          variableName: ".ParameterVariable.Other"
+          variable: ".ParameterVariable.Other"
         }
       },
       expected: currentState => {
@@ -141,14 +141,13 @@ test("populate both with given variable", () => {
   }).populate(
     {
       schema: "PhoneVerificationInput",
-      type: "both",
-      databaseName: "SomeDatabaseName",
-      variableName: ".SomeVariableName"
+      database: "SomeDatabaseName",
+      variable: ".SomeVariableName"
     },
     [
       {
         from: ".PhoneNumber",
-        to: { type: "variable", variableName: ".SomeObject.Hello.World" }
+        to: { type: "variable", variable: ".SomeObject.Hello.World" }
       }
     ]
   ).state;
@@ -162,7 +161,7 @@ test("populate both with given variable", () => {
         type: "add-item",
         item: { PhoneNumber: "notOriginal", Code },
         itemType: "PhoneVerificationInput",
-        databaseName: "SomeDatabaseName"
+        database: "SomeDatabaseName"
       }
     ],
     variables: {
@@ -176,11 +175,10 @@ test("populate both with given object", () => {
   const fixture = TestFixture(sampleSchema).populate(
     {
       schema: "PhoneVerificationInput",
-      type: "both",
-      databaseName: "SomeDatabaseName",
-      variableName: ".SomeVariableName"
+      database: "SomeDatabaseName",
+      variable: ".SomeVariableName"
     },
-    [{ from: ".PhoneNumber", to: { type: "object", object: "notOriginal" } }]
+    [{ from: ".PhoneNumber", to: { type: "literal", literal: "notOriginal" } }]
   ).state;
   // @ts-ignore
   const Code = fixture.operations[0]["item"]["Code"];
@@ -191,7 +189,7 @@ test("populate both with given object", () => {
         type: "add-item",
         item: { PhoneNumber: "notOriginal", Code },
         itemType: "PhoneVerificationInput",
-        databaseName: "SomeDatabaseName"
+        database: "SomeDatabaseName"
       }
     ],
     variables: { SomeVariableName: { PhoneNumber: "notOriginal", Code } }
@@ -201,9 +199,8 @@ test("populate both with given object", () => {
 test("populate both", () => {
   const fixture = TestFixture(sampleSchema).populate({
     schema: "PhoneVerificationInput",
-    type: "both",
-    databaseName: "SomeDatabaseName",
-    variableName: ".SomeVariableName"
+    database: "SomeDatabaseName",
+    variable: ".SomeVariableName"
   }).state;
   // @ts-ignore
   const PhoneNumber = fixture.operations[0]["item"]["PhoneNumber"];
@@ -217,7 +214,7 @@ test("populate both", () => {
         type: "add-item",
         item: { PhoneNumber, Code },
         itemType: "PhoneVerificationInput",
-        databaseName: "SomeDatabaseName"
+        database: "SomeDatabaseName"
       }
     ],
     variables: { SomeVariableName: { PhoneNumber, Code } }
@@ -242,7 +239,7 @@ test("clear specific database", () => {
   const fixture = TestFixture(sampleSchema, {
     operations: [],
     variables: { a: 1, b: 2 }
-  }).clear({ type: "database", databaseName: "SomeOther" }).state;
+  }).clear({ type: "database", database: "SomeOther" }).state;
   expect(fixture).toEqual({
     variables: { a: 1, b: 2 },
     operations: [
@@ -255,7 +252,7 @@ test("clear all variables", () => {
   const fixture = TestFixture(sampleSchema, {
     operations: [],
     variables: { a: 1, b: 2 }
-  }).clear({ type: "variable", variableName: "All" }).state;
+  }).clear({ type: "variable", variable: "All" }).state;
   expect(fixture).toEqual({
     variables: {},
     operations: []
@@ -271,16 +268,21 @@ test("comment", () => {
 });
 
 test("testingEnvironment", () => {
-  let time = new Date();
   let guid = "hello-world-im-a-guid";
-  const fixture = TestFixture(sampleSchema).testingEnvironment({ guid, time })
-    .state;
+  let time = new Date();
+  const fixture = TestFixture(sampleSchema, {
+    operations: [],
+    variables: { time }
+  }).testingEnvironment({
+    guid: { type: "literal", literal: guid },
+    time: { type: "variable", variable: ".time" }
+  }).state;
   expect(fixture).toEqual({
-    variables: { ENVIRONMENT_TIME: time, ENVIRONMENT_GUID: guid },
+    variables: { time, ENVIRONMENT_TIME: time, ENVIRONMENT_GUID: guid },
     operations: [
       {
-        operationType: "testingEnvironment",
-        testingEnvironment: { time, guid }
+        operationType: "environment",
+        environment: { time, guid }
       }
     ]
   });

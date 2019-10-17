@@ -1,10 +1,11 @@
 import { CommentOperation } from "./code/comment";
 import { ControllerOperation } from "./code/controller";
 import { DatabaseOperation } from "./code/database";
-import { TestingEnvironmentOperation } from "./code/testingEnvironment";
+import { EnvironmentOperation } from "./code/environment";
 import { ClearOperation } from "./local/clear";
 import { PopulateOperation } from "./local/populate";
 import { SendOperation } from "./local/send";
+import { TestingEnvironmentOperation } from "./local/testingEnvironment";
 
 export type CodeOperation<
   DatabaseType extends string,
@@ -13,7 +14,7 @@ export type CodeOperation<
   | DatabaseOperation<DatabaseType>
   | ControllerOperation<ResponseType>
   | CommentOperation
-  | TestingEnvironmentOperation;
+  | EnvironmentOperation;
 
 export type LocalOperation<
   SchemaType extends string,
@@ -23,4 +24,5 @@ export type LocalOperation<
 > =
   | ClearOperation<DatabaseType>
   | PopulateOperation<SchemaType, DatabaseType>
-  | SendOperation<SchemaType, DatabaseType, ResponseType, EndpointType>;
+  | SendOperation<SchemaType, DatabaseType, ResponseType, EndpointType>
+  | TestingEnvironmentOperation;

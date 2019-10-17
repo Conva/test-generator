@@ -1,10 +1,10 @@
 import { Mutation, MutationTo } from "./mutations";
-import { TestingEnvironment } from "./operation/code/testingEnvironment";
 import { ClearOperation } from "./operation/local/clear";
 import { PopulateOperation } from "./operation/local/populate";
 import { SendOperation } from "./operation/local/send";
+import { TestingEnvironmentOperation } from "./operation/local/testingEnvironment";
 import { CodeOperation } from "./operation/operation";
-import { generateType, getParameterValue, setNested } from "./utils";
+import { generateType, getNested, getParameterValue, setNested } from "./utils";
 
 export interface Schema {
   $schema: string;
@@ -68,7 +68,7 @@ export interface Fixture<
   ) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
 
   testingEnvironment: (
-    testingEnvironment: TestingEnvironment
+    testingEnvironment: TestingEnvironmentOperation
   ) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
 }
 
@@ -108,7 +108,7 @@ export const TestFixture = <
     if (operation) {
       switch (operation.type) {
         case "database":
-          deleteDatabase(operation.databaseName);
+          deleteDatabase(operation.database);
           break;
         case "variable":
           clearVariables();
@@ -130,14 +130,14 @@ export const TestFixture = <
     const addToDatabase = (
       generatedType: {},
       genType: string,
-      databaseName: DatabaseType
+      database: DatabaseType
     ) => {
       currentState.operations.push({
         operationType: "database",
         type: "add-item",
         item: generatedType,
         itemType: genType,
-        databaseName
+        database
       });
     };
 
@@ -149,17 +149,13 @@ export const TestFixture = <
     }
     const generatedType =
       operation.item || generateType(schema, currentState, mutations);
-    switch (operation.type) {
-      case "database":
-        addToDatabase(generatedType, operation.schema, operation.databaseName);
-        break;
-      case "variable":
-        setVariable(generatedType, operation.variableName);
-        break;
-      case "both":
-        setVariable(generatedType, operation.variableName);
-        addToDatabase(generatedType, operation.schema, operation.databaseName);
-        break;
+
+    if (operation.database) {
+      addToDatabase(generatedType, operation.schema, operation.database);
+    }
+
+    if (operation.variable) {
+      setVariable(generatedType, operation.variable);
     }
 
     return TestFixture(schemas, currentState);
@@ -197,7 +193,7 @@ export const TestFixture = <
         currentState.operations.push({
           operationType: "controller",
           type: "GET",
-          claims: operation.claims,
+          claims: operation.claims ? operation.claims(currentState) : undefined,
           endpoint,
           expected: operation.expected(currentState)
         });
@@ -214,15 +210,15 @@ export const TestFixture = <
           ? operation.item
           : generateType(schema, currentState, mutations);
 
-        if (operation.variableName !== undefined) {
-          setVariable(generatedType, operation.variableName);
+        if (operation.variable !== undefined) {
+          setVariable(generatedType, operation.variable);
         }
         currentState.operations.push({
           operationType: "controller",
           type: "POST",
           endpoint,
           postBody: generatedType,
-          claims: operation.claims,
+          claims: operation.claims ? operation.claims(currentState) : undefined,
           expected: operation.expected(currentState)
         });
         break;
@@ -239,17 +235,32 @@ export const TestFixture = <
     return TestFixture(schemas, currentState);
   };
 
-  const testingEnvironment = (testingEnvironment: TestingEnvironment) => {
-    currentState.operations.push({
-      operationType: "testingEnvironment",
-      testingEnvironment
+  const testingEnvironment = (operation: TestingEnvironmentOperation) => {
+    const environment: { [key: string]: Date | string } = {};
+
+    Object.keys(operation).map(key => {
+      const operationValue = operation[key];
+      if (operationValue) {
+        let value: any | undefined = undefined;
+
+        switch (operationValue.type) {
+          case "literal":
+            value = operationValue.literal;
+            break;
+          case "variable":
+            value = getNested(currentState.variables, operationValue.variable);
+            break;
+          default:
+            throw new Error("Invalid passing type in testingEnvironment");
+        }
+        environment[key] = value;
+        setVariable(value, `.ENVIRONMENT_${key.toLocaleUpperCase()}`);
+      }
     });
 
-    Object.keys(testingEnvironment).map(key => {
-      setVariable(
-        testingEnvironment[key],
-        `.ENVIRONMENT_${key.toLocaleUpperCase()}`
-      );
+    currentState.operations.push({
+      operationType: "environment",
+      environment: environment
     });
 
     return TestFixture(schemas, currentState);

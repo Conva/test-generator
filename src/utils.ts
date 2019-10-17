@@ -1,7 +1,7 @@
 // @ts-ignore
 import jsf from "json-schema-faker";
 import { Mutation } from "./mutations";
-import { ParameterType } from "./operation/local/send";
+import { PassingType } from "./operation/passing";
 import { FixtureState, Schema } from "./test-generator";
 
 export const generateType = <
@@ -19,11 +19,11 @@ export const generateType = <
         generatedType = setNested(
           generatedType,
           from,
-          getNested(currentState.variables, to.variableName)
+          getNested(currentState.variables, to.variable)
         );
         break;
-      case "object":
-        generatedType = setNested(generatedType, from, to.object);
+      case "literal":
+        generatedType = setNested(generatedType, from, to.literal);
         break;
       default:
         throw new Error("Mutation operation not specified");
@@ -36,7 +36,7 @@ export const getParameterValue = <
   DatabaseType extends string,
   ResponseType extends {}
 >(
-  parameter: ParameterType,
+  parameter: PassingType<string>,
   currentState: FixtureState<DatabaseType, ResponseType>
 ) => {
   switch (parameter.type) {
@@ -45,7 +45,7 @@ export const getParameterValue = <
     case "variable":
       const nestedString = getNested(
         currentState.variables,
-        parameter.variableName
+        parameter.variable
       );
       if (typeof nestedString !== "string") {
         throw new Error("Variable is not a string");

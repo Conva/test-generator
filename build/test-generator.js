@@ -24,7 +24,7 @@ exports.TestFixture = function (schemas, initialState) {
         if (operation) {
             switch (operation.type) {
                 case "database":
-                    deleteDatabase(operation.databaseName);
+                    deleteDatabase(operation.database);
                     break;
                 case "variable":
                     clearVariables();
@@ -41,13 +41,13 @@ exports.TestFixture = function (schemas, initialState) {
     };
     var populate = function (operation, mutations) {
         if (mutations === void 0) { mutations = []; }
-        var addToDatabase = function (generatedType, genType, databaseName) {
+        var addToDatabase = function (generatedType, genType, database) {
             currentState.operations.push({
                 operationType: "database",
                 type: "add-item",
                 item: generatedType,
                 itemType: genType,
-                databaseName: databaseName
+                database: database
             });
         };
         var schema = schemas[operation.schema];
@@ -55,17 +55,11 @@ exports.TestFixture = function (schemas, initialState) {
             throw new Error("Trying to populate with invalid GenType: " + operation.schema);
         }
         var generatedType = operation.item || utils_1.generateType(schema, currentState, mutations);
-        switch (operation.type) {
-            case "database":
-                addToDatabase(generatedType, operation.schema, operation.databaseName);
-                break;
-            case "variable":
-                setVariable(generatedType, operation.variableName);
-                break;
-            case "both":
-                setVariable(generatedType, operation.variableName);
-                addToDatabase(generatedType, operation.schema, operation.databaseName);
-                break;
+        if (operation.database) {
+            addToDatabase(generatedType, operation.schema, operation.database);
+        }
+        if (operation.variable) {
+            setVariable(generatedType, operation.variable);
         }
         return exports.TestFixture(schemas, currentState);
     };
@@ -90,7 +84,7 @@ exports.TestFixture = function (schemas, initialState) {
                 currentState.operations.push({
                     operationType: "controller",
                     type: "GET",
-                    claims: operation.claims,
+                    claims: operation.claims ? operation.claims(currentState) : undefined,
                     endpoint: endpoint,
                     expected: operation.expected(currentState)
                 });
@@ -103,15 +97,15 @@ exports.TestFixture = function (schemas, initialState) {
                 var generatedType = operation.item
                     ? operation.item
                     : utils_1.generateType(schema, currentState, mutations);
-                if (operation.variableName !== undefined) {
-                    setVariable(generatedType, operation.variableName);
+                if (operation.variable !== undefined) {
+                    setVariable(generatedType, operation.variable);
                 }
                 currentState.operations.push({
                     operationType: "controller",
                     type: "POST",
                     endpoint: endpoint,
                     postBody: generatedType,
-                    claims: operation.claims,
+                    claims: operation.claims ? operation.claims(currentState) : undefined,
                     expected: operation.expected(currentState)
                 });
                 break;
@@ -125,13 +119,29 @@ exports.TestFixture = function (schemas, initialState) {
         });
         return exports.TestFixture(schemas, currentState);
     };
-    var testingEnvironment = function (testingEnvironment) {
-        currentState.operations.push({
-            operationType: "testingEnvironment",
-            testingEnvironment: testingEnvironment
+    var testingEnvironment = function (operation) {
+        var environment = {};
+        Object.keys(operation).map(function (key) {
+            var operationValue = operation[key];
+            if (operationValue) {
+                var value = undefined;
+                switch (operationValue.type) {
+                    case "literal":
+                        value = operationValue.literal;
+                        break;
+                    case "variable":
+                        value = utils_1.getNested(currentState.variables, operationValue.variable);
+                        break;
+                    default:
+                        throw new Error("Invalid passing type in testingEnvironment");
+                }
+                environment[key] = value;
+                setVariable(value, ".ENVIRONMENT_" + key.toLocaleUpperCase());
+            }
         });
-        Object.keys(testingEnvironment).map(function (key) {
-            setVariable(testingEnvironment[key], ".ENVIRONMENT_" + key.toLocaleUpperCase());
+        currentState.operations.push({
+            operationType: "environment",
+            environment: environment
         });
         return exports.TestFixture(schemas, currentState);
     };

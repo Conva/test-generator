@@ -1,8 +1,8 @@
 import { Mutation } from "./mutations";
-import { TestingEnvironment } from "./operation/code/testingEnvironment";
 import { ClearOperation } from "./operation/local/clear";
 import { PopulateOperation } from "./operation/local/populate";
 import { SendOperation } from "./operation/local/send";
+import { TestingEnvironmentOperation } from "./operation/local/testingEnvironment";
 import { CodeOperation } from "./operation/operation";
 export interface Schema {
     $schema: string;
@@ -33,7 +33,7 @@ export interface Fixture<SchemaType extends string, DatabaseType extends string,
     populate: (operation: PopulateOperation<SchemaType, DatabaseType>, mutations?: Mutation[]) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
     send: (operation: SendOperation<SchemaType, DatabaseType, ResponseType, EndpointType>, mutations?: Mutation[]) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
     comment: (comment: string) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
-    testingEnvironment: (testingEnvironment: TestingEnvironment) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
+    testingEnvironment: (testingEnvironment: TestingEnvironmentOperation) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
 }
 export declare const TestFixture: <SchemaType extends string, DatabaseType extends string, ResponseType_1, EndpointType extends string>(schemas: {
     [schemaName: string]: Schema;

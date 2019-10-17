@@ -4,10 +4,10 @@ export interface Mutation {
 }
 export interface VariableMutation {
     type: "variable";
-    variableName: string;
+    variable: string;
 }
-export interface ObjectMutation {
-    type: "object";
-    object: any;
+export interface LiteralMutation {
+    type: "literal";
+    literal: any;
 }
-export declare type MutationTo = VariableMutation | ObjectMutation;
+export declare type MutationTo = VariableMutation | LiteralMutation;
