@@ -125,6 +125,23 @@ exports.TestFixture = function (schemas, initialState) {
         });
         return exports.TestFixture(schemas, currentState);
     };
-    return { state: currentState, clear: clear, populate: populate, send: send, comment: comment };
+    var testingEnvironment = function (testingEnvironment) {
+        currentState.operations.push({
+            operationType: "testingEnvironment",
+            testingEnvironment: testingEnvironment
+        });
+        Object.keys(testingEnvironment).map(function (key) {
+            setVariable(testingEnvironment[key], ".ENVIRONMENT_" + key.toLocaleUpperCase());
+        });
+        return exports.TestFixture(schemas, currentState);
+    };
+    return {
+        state: currentState,
+        clear: clear,
+        populate: populate,
+        send: send,
+        comment: comment,
+        testingEnvironment: testingEnvironment
+    };
 };
 //# sourceMappingURL=test-generator.js.map

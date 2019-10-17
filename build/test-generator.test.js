@@ -246,4 +246,19 @@ test("comment", function () {
         operations: [{ operationType: "comment", comment: "Hello World" }]
     });
 });
+test("testingEnvironment", function () {
+    var time = new Date();
+    var guid = "hello-world-im-a-guid";
+    var fixture = test_generator_1.TestFixture(sampleSchema).testingEnvironment({ guid: guid, time: time })
+        .state;
+    expect(fixture).toEqual({
+        variables: { ENVIRONMENT_TIME: time, ENVIRONMENT_GUID: guid },
+        operations: [
+            {
+                operationType: "testingEnvironment",
+                testingEnvironment: { time: time, guid: guid }
+            }
+        ]
+    });
+});
 //# sourceMappingURL=test-generator.test.js.map

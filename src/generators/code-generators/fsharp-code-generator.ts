@@ -52,6 +52,18 @@ const operationToCode = <DatabaseType extends string, ResponseType extends {}>(
     case "comment": {
       return `\n${testBodySpaces}// ${operation.comment}"`;
     }
+
+    case "testingEnvironment": {
+      Object.keys(operation.testingEnvironment).map(() => {
+        if (operation.testingEnvironment.guid) {
+          return `\n${testBodySpaces}changeGuidTo "${operation.testingEnvironment.guid}"`;
+        }
+
+        if (operation.testingEnvironment.time) {
+          return `\n${testBodySpaces}changeTimeTo "${operation.testingEnvironment.time.toISOString()}"`;
+        }
+      });
+    }
   }
 };
 
@@ -90,7 +102,7 @@ export const operationsToCode = <
     fixture.state.operations.forEach(operation => {
       code += `${operationToCode(operation, {
         ...collection,
-        testName,
+        testName
       })}`;
     });
   });

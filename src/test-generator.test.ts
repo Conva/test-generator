@@ -67,7 +67,7 @@ test("send object post", () => {
           },
           statusCode: 200
         },
-        postBody: { Code, PhoneNumber : "Hello" }
+        postBody: { Code, PhoneNumber: "Hello" }
       }
     ],
     variables: {
@@ -267,5 +267,21 @@ test("comment", () => {
   expect(fixture).toEqual({
     variables: {},
     operations: [{ operationType: "comment", comment: "Hello World" }]
+  });
+});
+
+test("testingEnvironment", () => {
+  let time = new Date();
+  let guid = "hello-world-im-a-guid";
+  const fixture = TestFixture(sampleSchema).testingEnvironment({ guid, time })
+    .state;
+  expect(fixture).toEqual({
+    variables: { ENVIRONMENT_TIME: time, ENVIRONMENT_GUID: guid },
+    operations: [
+      {
+        operationType: "testingEnvironment",
+        testingEnvironment: { time, guid }
+      }
+    ]
   });
 });

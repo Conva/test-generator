@@ -1,6 +1,7 @@
 import { CommentOperation } from "./code/comment";
 import { ControllerOperation } from "./code/controller";
 import { DatabaseOperation } from "./code/database";
+import { TestingEnvironmentOperation } from "./code/testingEnvironment";
 import { ClearOperation } from "./local/clear";
 import { PopulateOperation } from "./local/populate";
 import { SendOperation } from "./local/send";
@@ -11,7 +12,8 @@ export type CodeOperation<
 > =
   | DatabaseOperation<DatabaseType>
   | ControllerOperation<ResponseType>
-  | CommentOperation;
+  | CommentOperation
+  | TestingEnvironmentOperation;
 
 export type LocalOperation<
   SchemaType extends string,

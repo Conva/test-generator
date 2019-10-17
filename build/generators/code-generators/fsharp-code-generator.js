@@ -49,6 +49,16 @@ var operationToCode = function (operation, _a) {
         case "comment": {
             return "\n" + testBodySpaces + "// " + operation.comment + "\"";
         }
+        case "testingEnvironment": {
+            Object.keys(operation.testingEnvironment).map(function () {
+                if (operation.testingEnvironment.guid) {
+                    return "\n" + testBodySpaces + "changeGuidTo \"" + operation.testingEnvironment.guid + "\"";
+                }
+                if (operation.testingEnvironment.time) {
+                    return "\n" + testBodySpaces + "changeTimeTo \"" + operation.testingEnvironment.time.toISOString() + "\"";
+                }
+            });
+        }
     }
 };
 exports.operationsToCode = function (collection) {

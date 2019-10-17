@@ -1,4 +1,5 @@
 import { Mutation, MutationTo } from "./mutations";
+import { TestingEnvironment } from "./operation/code/testingEnvironment";
 import { ClearOperation } from "./operation/local/clear";
 import { PopulateOperation } from "./operation/local/populate";
 import { SendOperation } from "./operation/local/send";
@@ -65,6 +66,10 @@ export interface Fixture<
   comment: (
     comment: string
   ) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
+
+  testingEnvironment: (
+    testingEnvironment: TestingEnvironment
+  ) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
 }
 
 export const TestFixture = <
@@ -81,7 +86,7 @@ export const TestFixture = <
 ): Fixture<SchemaType, DatabaseType, ResponseType, EndpointType> => {
   const currentState = initialState;
 
-  const setVariable = (generatedType: {}, variableName: string) => {
+  const setVariable = (generatedType: any, variableName: string) => {
     currentState.variables = setNested(
       currentState.variables,
       variableName,
@@ -234,5 +239,28 @@ export const TestFixture = <
     return TestFixture(schemas, currentState);
   };
 
-  return { state: currentState, clear, populate, send, comment };
+  const testingEnvironment = (testingEnvironment: TestingEnvironment) => {
+    currentState.operations.push({
+      operationType: "testingEnvironment",
+      testingEnvironment
+    });
+
+    Object.keys(testingEnvironment).map(key => {
+      setVariable(
+        testingEnvironment[key],
+        `.ENVIRONMENT_${key.toLocaleUpperCase()}`
+      );
+    });
+
+    return TestFixture(schemas, currentState);
+  };
+
+  return {
+    state: currentState,
+    clear,
+    populate,
+    send,
+    comment,
+    testingEnvironment
+  };
 };
