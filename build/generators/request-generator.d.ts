@@ -1,5 +1,6 @@
 /// <reference types="node" />
 import { IncomingHttpHeaders } from "http";
+import jwt from "jsonwebtoken";
 import { ControllerOperation } from "../operation/code/controller";
 export interface UserSpecifiedProxyOptions {
     resource?: string;
@@ -11,7 +12,7 @@ export declare type ProxyOptions = {
     path?: string;
     method?: string;
     additionalHeaders?: IncomingHttpHeaders;
-    additionalClaims?: {};
+    claims?: {};
 } & UserSpecifiedProxyOptions;
 export declare const testRequestFrom: <ResponseType_1 extends {}>({ endpoint, expected, claims, type, postBody }: ControllerOperation<ResponseType_1>) => {
     response: {
@@ -26,6 +27,7 @@ export declare const testRequestFrom: <ResponseType_1 extends {}>({ endpoint, ex
     request: {
         body: any;
         headers: {
+            authorization: string | undefined;
             "content-type": string;
             "user-agent": string;
             accept: string;
@@ -47,7 +49,6 @@ export declare const testRequestFrom: <ResponseType_1 extends {}>({ endpoint, ex
             'age'?: string | undefined;
             'allow'?: string | undefined;
             'alt-svc'?: string | undefined;
-            'authorization'?: string | undefined;
             'content-disposition'?: string | undefined;
             'content-encoding'?: string | undefined;
             'content-language'?: string | undefined;
@@ -112,6 +113,7 @@ export declare const testRequestFrom: <ResponseType_1 extends {}>({ endpoint, ex
             "X-Forwarded-For": string;
             "X-Forwarded-Port": string;
             "X-Forwarded-Proto": string;
+            authorization: string | undefined;
             "content-type": string;
             "user-agent": string;
             accept: string;
@@ -133,7 +135,6 @@ export declare const testRequestFrom: <ResponseType_1 extends {}>({ endpoint, ex
             'age'?: string | undefined;
             'allow'?: string | undefined;
             'alt-svc'?: string | undefined;
-            'authorization'?: string | undefined;
             'content-disposition'?: string | undefined;
             'content-encoding'?: string | undefined;
             'content-language'?: string | undefined;
@@ -177,12 +178,7 @@ export declare const testRequestFrom: <ResponseType_1 extends {}>({ endpoint, ex
             requestTime: string;
             requestTimeEpoch: number;
             authorizer: {
-                claims: {
-                    nbf: number;
-                    exp: number;
-                    iss: string;
-                    aud: string;
-                };
+                claims: {} | undefined;
             };
             identity: {
                 cognitoIdentityPoolId: null;
@@ -205,14 +201,22 @@ export declare const testRequestFrom: <ResponseType_1 extends {}>({ endpoint, ex
         };
     };
 };
+export declare let TokenSettings: {
+    SIGNING_SECRET?: jwt.Secret;
+};
+export declare const getJWTToken: (claims: {}, signingKey?: string | Buffer | {
+    key: string | Buffer;
+    passphrase: string;
+} | undefined, options?: jwt.SignOptions | undefined) => any;
 /**
  * Create payload for AWS lamda mock server request
  * @param options Options for AWS lamda payload
  */
-export declare const requestFrom: ({ additionalHeaders, additionalClaims, body, path, resource, method, accountId, stage }: ProxyOptions) => {
+export declare const requestFrom: ({ additionalHeaders, claims, body, path, resource, method, accountId, stage }: ProxyOptions) => {
     request: {
         body: any;
         headers: {
+            authorization: string | undefined;
             "content-type": string;
             "user-agent": string;
             accept: string;
@@ -234,7 +238,6 @@ export declare const requestFrom: ({ additionalHeaders, additionalClaims, body, 
             'age'?: string | undefined;
             'allow'?: string | undefined;
             'alt-svc'?: string | undefined;
-            'authorization'?: string | undefined;
             'content-disposition'?: string | undefined;
             'content-encoding'?: string | undefined;
             'content-language'?: string | undefined;
@@ -299,6 +302,7 @@ export declare const requestFrom: ({ additionalHeaders, additionalClaims, body, 
             "X-Forwarded-For": string;
             "X-Forwarded-Port": string;
             "X-Forwarded-Proto": string;
+            authorization: string | undefined;
             "content-type": string;
             "user-agent": string;
             accept: string;
@@ -320,7 +324,6 @@ export declare const requestFrom: ({ additionalHeaders, additionalClaims, body, 
             'age'?: string | undefined;
             'allow'?: string | undefined;
             'alt-svc'?: string | undefined;
-            'authorization'?: string | undefined;
             'content-disposition'?: string | undefined;
             'content-encoding'?: string | undefined;
             'content-language'?: string | undefined;
@@ -364,12 +367,7 @@ export declare const requestFrom: ({ additionalHeaders, additionalClaims, body, 
             requestTime: string;
             requestTimeEpoch: number;
             authorizer: {
-                claims: {
-                    nbf: number;
-                    exp: number;
-                    iss: string;
-                    aud: string;
-                };
+                claims: {} | undefined;
             };
             identity: {
                 cognitoIdentityPoolId: null;

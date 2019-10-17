@@ -1,4 +1,5 @@
 import { IncomingHttpHeaders } from "http";
+import jwt from "jsonwebtoken";
 import { ControllerOperation } from "../operation/code/controller";
 
 export interface UserSpecifiedProxyOptions {
@@ -12,7 +13,7 @@ export type ProxyOptions = {
   path?: string;
   method?: string;
   additionalHeaders?: IncomingHttpHeaders;
-  additionalClaims?: {};
+  claims?: {};
 } & UserSpecifiedProxyOptions;
 
 export const testRequestFrom = <ResponseType extends {}>({
@@ -25,7 +26,7 @@ export const testRequestFrom = <ResponseType extends {}>({
 }: ControllerOperation<ResponseType>) => {
   return {
     ...requestFrom({
-      additionalClaims: claims,
+      claims,
       path: endpoint,
       method: type,
       body: postBody
@@ -42,13 +43,31 @@ export const testRequestFrom = <ResponseType extends {}>({
   };
 };
 
+export let TokenSettings: { SIGNING_SECRET?: jwt.Secret } = {};
+
+export const getJWTToken = (
+  claims: {},
+  signingKey?: jwt.Secret,
+  options?: jwt.SignOptions
+) => {
+  if (signingKey || TokenSettings.SIGNING_SECRET) {
+    return jwt.sign(
+      claims,
+      // @ts-ignore
+      signingKey || TokenSettings.SIGNING_SECRET,
+      options
+    );
+  }
+  throw new Error("Signing token not given");
+};
+
 /**
  * Create payload for AWS lamda mock server request
  * @param options Options for AWS lamda payload
  */
 export const requestFrom = ({
   additionalHeaders = {},
-  additionalClaims = {},
+  claims,
   body,
   path = "",
   resource = "/{proxy+}",
@@ -56,18 +75,9 @@ export const requestFrom = ({
   accountId = "123456789012",
   stage = "prod"
 }: ProxyOptions) => {
-  const authorizer = {
-    claims: {
-      ...additionalClaims,
-      nbf: Date.now(),
-      exp: Date.now() + 20 * 60 * 1000,
-      iss: "http://localhost:5000",
-      aud: "all"
-    }
-  };
-
   const headers = {
     ...additionalHeaders,
+    authorization: claims ? `Bearer ${getJWTToken(claims)}` : undefined,
     "content-type": "application/json",
     "user-agent": "PostmanRuntime/7.15.2",
     accept: "*/*",
@@ -125,7 +135,9 @@ export const requestFrom = ({
         requestId: "c6af9ac6-7b61-11e6-9a41-93e8deadbeef",
         requestTime: "09/Apr/2015:12:34:56 +0000",
         requestTimeEpoch: 1428582896000,
-        authorizer: authorizer,
+        authorizer: {
+          claims
+        },
         identity: {
           cognitoIdentityPoolId: null,
           accountId: null,

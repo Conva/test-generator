@@ -6,7 +6,7 @@ import { FixtureState, Schema } from "./test-generator";
 
 export const generateType = <
   DatabaseType extends string,
-  ResponseType extends {},
+  ResponseType extends {}
 >(
   schema: Schema,
   currentState: FixtureState<DatabaseType, ResponseType>,
@@ -34,7 +34,7 @@ export const generateType = <
 
 export const getParameterValue = <
   DatabaseType extends string,
-  ResponseType extends {},
+  ResponseType extends {}
 >(
   parameter: ParameterType,
   currentState: FixtureState<DatabaseType, ResponseType>
@@ -119,6 +119,10 @@ export const getNested = <T, C>(
   path: string
 ): C | undefined => {
   const { previous, lastIndex } = nested(object, path);
-  // @ts-ignore
-  return previous[lastIndex];
+  const result = previous[lastIndex];
+  if (result !== undefined) {
+    // @ts-ignore
+    return result;
+  }
+  throw new Error(`Property ${path} not found int ${JSON.stringify(object)}`);
 };

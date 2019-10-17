@@ -93,7 +93,11 @@ exports.removeNested = function (object, path) {
 };
 exports.getNested = function (object, path) {
     var _a = nested(object, path), previous = _a.previous, lastIndex = _a.lastIndex;
-    // @ts-ignore
-    return previous[lastIndex];
+    var result = previous[lastIndex];
+    if (result !== undefined) {
+        // @ts-ignore
+        return result;
+    }
+    throw new Error("Property " + path + " not found int " + JSON.stringify(object));
 };
 //# sourceMappingURL=utils.js.map

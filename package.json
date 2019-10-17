@@ -1,6 +1,6 @@
 {
   "name": "test-generator",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "",
   "main": "build/test-generator.js",
   "module": "build/test-generator.js",
@@ -13,11 +13,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "json-schema-faker": "^0.5.0-rc19"
+    "json-schema-faker": "^0.5.0-rc19",
+    "jsonwebtoken": "^8.5.1"
   },
   "devDependencies": {
     "@babel/preset-typescript": "^7.6.0",
     "@types/jest": "^24.0.19",
+    "@types/jsonwebtoken": "^8.3.5",
     "@types/node": "^12.7.8",
     "jest": "^24.9.0",
     "ts-jest": "^24.1.0",

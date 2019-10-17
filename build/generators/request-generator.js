@@ -10,13 +10,17 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+var jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 exports.testRequestFrom = function (_a) {
     var endpoint = _a.endpoint, expected = _a.expected, claims = _a.claims, type = _a.type, 
     // @ts-ignore
     postBody = _a.postBody;
     return __assign(__assign({}, exports.requestFrom({
-        additionalClaims: claims,
+        claims: claims,
         path: endpoint,
         method: type,
         body: postBody
@@ -30,16 +34,22 @@ exports.testRequestFrom = function (_a) {
             isBase64Encoded: false
         } });
 };
+exports.TokenSettings = {};
+exports.getJWTToken = function (claims, signingKey, options) {
+    if (signingKey || exports.TokenSettings.SIGNING_SECRET) {
+        return jsonwebtoken_1.default.sign(claims, 
+        // @ts-ignore
+        signingKey || exports.TokenSettings.SIGNING_SECRET, options);
+    }
+    throw new Error("Signing token not given");
+};
 /**
  * Create payload for AWS lamda mock server request
  * @param options Options for AWS lamda payload
  */
 exports.requestFrom = function (_a) {
-    var _b = _a.additionalHeaders, additionalHeaders = _b === void 0 ? {} : _b, _c = _a.additionalClaims, additionalClaims = _c === void 0 ? {} : _c, body = _a.body, _d = _a.path, path = _d === void 0 ? "" : _d, _e = _a.resource, resource = _e === void 0 ? "/{proxy+}" : _e, _f = _a.method, method = _f === void 0 ? "POST" : _f, _g = _a.accountId, accountId = _g === void 0 ? "123456789012" : _g, _h = _a.stage, stage = _h === void 0 ? "prod" : _h;
-    var authorizer = {
-        claims: __assign(__assign({}, additionalClaims), { nbf: Date.now(), exp: Date.now() + 20 * 60 * 1000, iss: "http://localhost:5000", aud: "all" })
-    };
-    var headers = __assign(__assign({}, additionalHeaders), { "content-type": "application/json", "user-agent": "PostmanRuntime/7.15.2", accept: "*/*", "cache-control": "no-cache", "postman-token": "52551a61-50dd-4b20-9dab-26fbb82cfee6", host: "localhost:5000", "accept-encoding": "gzip, deflate", "content-length": "38008", connection: "keep-alive" });
+    var _b = _a.additionalHeaders, additionalHeaders = _b === void 0 ? {} : _b, claims = _a.claims, body = _a.body, _c = _a.path, path = _c === void 0 ? "" : _c, _d = _a.resource, resource = _d === void 0 ? "/{proxy+}" : _d, _e = _a.method, method = _e === void 0 ? "POST" : _e, _f = _a.accountId, accountId = _f === void 0 ? "123456789012" : _f, _g = _a.stage, stage = _g === void 0 ? "prod" : _g;
+    var headers = __assign(__assign({}, additionalHeaders), { authorization: claims ? "Bearer " + exports.getJWTToken(claims) : undefined, "content-type": "application/json", "user-agent": "PostmanRuntime/7.15.2", accept: "*/*", "cache-control": "no-cache", "postman-token": "52551a61-50dd-4b20-9dab-26fbb82cfee6", host: "localhost:5000", "accept-encoding": "gzip, deflate", "content-length": "38008", connection: "keep-alive" });
     return {
         request: {
             body: body,
@@ -81,7 +91,9 @@ exports.requestFrom = function (_a) {
                 requestId: "c6af9ac6-7b61-11e6-9a41-93e8deadbeef",
                 requestTime: "09/Apr/2015:12:34:56 +0000",
                 requestTimeEpoch: 1428582896000,
-                authorizer: authorizer,
+                authorizer: {
+                    claims: claims
+                },
                 identity: {
                     cognitoIdentityPoolId: null,
                     accountId: null,
