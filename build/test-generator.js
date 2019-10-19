@@ -50,13 +50,13 @@ exports.TestFixture = function (schemas, initialState) {
                 operationType: "database",
                 type: "add-item",
                 item: generatedType,
-                itemType: genType,
+                schema: genType,
                 database: database
             });
         };
         var item;
         if (operation.schema === "Custom") {
-            item = operation.item;
+            item = operation.item ? operation.item(currentState) : undefined;
         }
         else {
             var schema = schemas[operation.schema];

@@ -30,7 +30,7 @@ export interface FixtureCollection<SchemaType extends string, DatabaseType exten
 export interface Fixture<SchemaType extends string, DatabaseType extends string, ResponseType, EndpointType extends string> {
     state: FixtureState<DatabaseType, ResponseType>;
     clear: (operation?: ClearOperation<DatabaseType>) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
-    populate: (operation: PopulateOperation<SchemaType, DatabaseType>, mutations?: Mutation[]) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
+    populate: (operation: PopulateOperation<SchemaType, DatabaseType, ResponseType>, mutations?: Mutation[]) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
     send: (operation: SendOperation<SchemaType, DatabaseType, ResponseType, EndpointType>, mutations?: Mutation[]) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
     comment: (comment: string) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
     testingEnvironment: (testingEnvironment: TestingEnvironmentOperation) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;

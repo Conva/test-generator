@@ -10,7 +10,7 @@ export interface AddItemDatabaseOperation<DatabaseType extends string> {
   type: "add-item";
   database: DatabaseType;
   item: {};
-  itemType: string;
+  schema: string;
 }
 
 export interface DeleteTableDatabaseOperation {

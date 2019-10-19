@@ -7,4 +7,4 @@ import { PopulateOperation } from "./local/populate";
 import { SendOperation } from "./local/send";
 import { TestingEnvironmentOperation } from "./local/testingEnvironment";
 export declare type CodeOperation<DatabaseType extends string, ResponseType extends {}> = DatabaseOperation<DatabaseType> | ControllerOperation<ResponseType> | CommentOperation | EnvironmentOperation;
-export declare type LocalOperation<SchemaType extends string, DatabaseType extends string, ResponseType extends {}, EndpointType extends string> = ClearOperation<DatabaseType> | PopulateOperation<SchemaType, DatabaseType> | SendOperation<SchemaType, DatabaseType, ResponseType, EndpointType> | TestingEnvironmentOperation;
+export declare type LocalOperation<SchemaType extends string, DatabaseType extends string, ResponseType extends {}, EndpointType extends string> = ClearOperation<DatabaseType> | PopulateOperation<SchemaType, DatabaseType, ResponseType> | SendOperation<SchemaType, DatabaseType, ResponseType, EndpointType> | TestingEnvironmentOperation;

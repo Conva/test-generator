@@ -20,7 +20,7 @@ const operationToCode = <DatabaseType extends string, ResponseType extends {}>(
         case "add-item": {
           let variableName = `temp${operation.database}`;
           let result = `\n${testBodySpaces}let ${variableName} = Compact.deserialize<${
-            operation.itemType
+            operation.schema
           }> ${JSON.stringify(JSON.stringify(operation.item))}`;
           result += `\n${testBodySpaces}(DatabaseService.add (Tables.${operation.database} databaseClient) ${variableName} None).Wait()`;
           return result;

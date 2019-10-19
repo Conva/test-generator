@@ -51,7 +51,7 @@ export interface Fixture<
     operation?: ClearOperation<DatabaseType>
   ) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
   populate: (
-    operation: PopulateOperation<SchemaType, DatabaseType>,
+    operation: PopulateOperation<SchemaType, DatabaseType, ResponseType>,
     mutations?: Mutation[]
   ) => Fixture<SchemaType, DatabaseType, ResponseType, EndpointType>;
   send: (
@@ -128,7 +128,7 @@ export const TestFixture = <
   };
 
   const populate = (
-    operation: PopulateOperation<SchemaType, DatabaseType>,
+    operation: PopulateOperation<SchemaType, DatabaseType, ResponseType>,
     mutations: { from: string; to: MutationTo }[] = []
   ) => {
     const addToDatabase = (
@@ -140,14 +140,14 @@ export const TestFixture = <
         operationType: "database",
         type: "add-item",
         item: generatedType,
-        itemType: genType,
+        schema: genType,
         database
       });
     };
 
     let item: undefined | {};
     if (operation.schema === "Custom") {
-      item = operation.item;
+      item = operation.item ? operation.item(currentState) : undefined;
     } else {
       const schema = schemas[operation.schema];
       if (schema === undefined) {

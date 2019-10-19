@@ -137,7 +137,9 @@ test("populate both with given item", () => {
     testName: "SampleTest"
   }).populate({
     schema: "Custom",
-    item: { helloWorld: 1 },
+    item: () => {
+      return { helloWorld: 1 };
+    },
     database: "SomeDatabaseName",
     variable: ".SomeVariableName"
   }).state;
@@ -149,7 +151,7 @@ test("populate both with given item", () => {
         operationType: "database",
         type: "add-item",
         item: { helloWorld: 1 },
-        itemType: "Custom",
+        schema: "Custom",
         database: "SomeDatabaseName"
       }
     ],
@@ -186,7 +188,7 @@ test("populate both with given variable", () => {
         operationType: "database",
         type: "add-item",
         item: { PhoneNumber: "notOriginal", Code },
-        itemType: "PhoneVerificationInput",
+        schema: "PhoneVerificationInput",
         database: "SomeDatabaseName"
       }
     ],
@@ -214,7 +216,7 @@ test("populate both with given object", () => {
         operationType: "database",
         type: "add-item",
         item: { PhoneNumber: "notOriginal", Code },
-        itemType: "PhoneVerificationInput",
+        schema: "PhoneVerificationInput",
         database: "SomeDatabaseName"
       }
     ],
@@ -239,7 +241,7 @@ test("populate both", () => {
         operationType: "database",
         type: "add-item",
         item: { PhoneNumber, Code },
-        itemType: "PhoneVerificationInput",
+        schema: "PhoneVerificationInput",
         database: "SomeDatabaseName"
       }
     ],

@@ -23,6 +23,6 @@ export type LocalOperation<
   EndpointType extends string
 > =
   | ClearOperation<DatabaseType>
-  | PopulateOperation<SchemaType, DatabaseType>
+  | PopulateOperation<SchemaType, DatabaseType, ResponseType>
   | SendOperation<SchemaType, DatabaseType, ResponseType, EndpointType>
   | TestingEnvironmentOperation;
