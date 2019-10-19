@@ -145,21 +145,29 @@ export const TestFixture = <
       });
     };
 
-    const schema = schemas[operation.schema];
-    if (schema === undefined) {
-      throw new Error(
-        `Trying to populate with invalid GenType: ${operation.schema}`
-      );
+    let item: undefined | {};
+    if (operation.schema === "Custom") {
+      item = operation.item;
+    } else {
+      const schema = schemas[operation.schema];
+      if (schema === undefined) {
+        throw new Error(
+          `Trying to populate with invalid GenType: ${operation.schema}`
+        );
+      }
+      item = generateType(schema, currentState, mutations);
     }
-    const generatedType =
-      operation.item || generateType(schema, currentState, mutations);
 
-    if (operation.database) {
-      addToDatabase(generatedType, operation.schema, operation.database);
-    }
+    if (item) {
+      if (operation.database) {
+        addToDatabase(item, operation.schema, operation.database);
+      }
 
-    if (operation.variable) {
-      setVariable(generatedType, operation.variable);
+      if (operation.variable) {
+        setVariable(item, operation.variable);
+      }
+    } else {
+      throw new Error("Property item is not defined with Custom schema");
     }
 
     return TestFixture(schemas, currentState);

@@ -54,16 +54,27 @@ exports.TestFixture = function (schemas, initialState) {
                 database: database
             });
         };
-        var schema = schemas[operation.schema];
-        if (schema === undefined) {
-            throw new Error("Trying to populate with invalid GenType: " + operation.schema);
+        var item;
+        if (operation.schema === "Custom") {
+            item = operation.item;
         }
-        var generatedType = operation.item || utils_1.generateType(schema, currentState, mutations);
-        if (operation.database) {
-            addToDatabase(generatedType, operation.schema, operation.database);
+        else {
+            var schema = schemas[operation.schema];
+            if (schema === undefined) {
+                throw new Error("Trying to populate with invalid GenType: " + operation.schema);
+            }
+            item = utils_1.generateType(schema, currentState, mutations);
         }
-        if (operation.variable) {
-            setVariable(generatedType, operation.variable);
+        if (item) {
+            if (operation.database) {
+                addToDatabase(item, operation.schema, operation.database);
+            }
+            if (operation.variable) {
+                setVariable(item, operation.variable);
+            }
+        }
+        else {
+            throw new Error("Property item is not defined with Custom schema");
         }
         return exports.TestFixture(schemas, currentState);
     };

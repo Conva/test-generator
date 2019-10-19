@@ -132,6 +132,33 @@ test("send object get", () => {
   });
 });
 
+test("populate both with given item", () => {
+  const fixture = TestFixture(sampleSchema, {
+    testName: "SampleTest"
+  }).populate({
+    schema: "Custom",
+    item: { helloWorld: 1 },
+    database: "SomeDatabaseName",
+    variable: ".SomeVariableName"
+  }).state;
+  // @ts-ignore
+  expect(fixture).toEqual({
+    testName: "SampleTest",
+    operations: [
+      {
+        operationType: "database",
+        type: "add-item",
+        item: { helloWorld: 1 },
+        itemType: "Custom",
+        database: "SomeDatabaseName"
+      }
+    ],
+    variables: {
+      SomeVariableName: { helloWorld: 1 }
+    }
+  });
+});
+
 test("populate both with given variable", () => {
   const fixture = TestFixture(sampleSchema, {
     operations: [],

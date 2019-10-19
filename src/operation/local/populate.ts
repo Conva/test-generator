@@ -5,5 +5,5 @@ export interface PopulateOperation<
   database?: DatabaseType;
   variable?: string;
   item?: {};
-  schema: SchemaType;
+  schema: SchemaType | "Custom";
 }

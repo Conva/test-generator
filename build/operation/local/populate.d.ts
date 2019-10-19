@@ -2,5 +2,5 @@ export interface PopulateOperation<SchemaType extends string, DatabaseType exten
     database?: DatabaseType;
     variable?: string;
     item?: {};
-    schema: SchemaType;
+    schema: SchemaType | "Custom";
 }
