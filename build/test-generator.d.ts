@@ -37,4 +37,4 @@ export interface Fixture<SchemaType extends string, DatabaseType extends string,
 }
 export declare const TestFixture: <SchemaType extends string, DatabaseType extends string, ResponseType_1, EndpointType extends string>(schemas: {
     [schemaName: string]: Schema;
-}, initialState?: FixtureState<DatabaseType, ResponseType_1>) => Fixture<SchemaType, DatabaseType, ResponseType_1, EndpointType>;
+}, initialState?: Partial<FixtureState<DatabaseType, ResponseType_1>>) => Fixture<SchemaType, DatabaseType, ResponseType_1, EndpointType>;

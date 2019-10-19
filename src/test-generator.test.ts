@@ -21,7 +21,6 @@ const sampleSchema = fetchSchemas([
 
 test("send object post", () => {
   const fixture = TestFixture<string, string, {}, string>(sampleSchema, {
-    operations: [],
     variables: { SomeVariable: { Other: "Hello" } },
     testName: "SampleTest"
   }).send(
@@ -250,7 +249,6 @@ test("clear specific database", () => {
 
 test("clear all variables", () => {
   const fixture = TestFixture(sampleSchema, {
-    operations: [],
     variables: { a: 1, b: 2 }
   }).clear({ type: "variable", variable: "All" }).state;
   expect(fixture).toEqual({
@@ -271,7 +269,6 @@ test("testingEnvironment", () => {
   let guid = "hello-world-im-a-guid";
   let time = new Date();
   const fixture = TestFixture(sampleSchema, {
-    operations: [],
     variables: { time }
   }).testingEnvironment({
     guid: { type: "literal", literal: guid },

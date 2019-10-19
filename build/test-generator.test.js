@@ -21,7 +21,6 @@ var sampleSchema = utils_1.fetchSchemas([
 ]);
 test("send object post", function () {
     var fixture = test_generator_1.TestFixture(sampleSchema, {
-        operations: [],
         variables: { SomeVariable: { Other: "Hello" } },
         testName: "SampleTest"
     }).send({
@@ -228,7 +227,6 @@ test("clear specific database", function () {
 });
 test("clear all variables", function () {
     var fixture = test_generator_1.TestFixture(sampleSchema, {
-        operations: [],
         variables: { a: 1, b: 2 }
     }).clear({ type: "variable", variable: "All" }).state;
     expect(fixture).toEqual({
@@ -247,7 +245,6 @@ test("testingEnvironment", function () {
     var guid = "hello-world-im-a-guid";
     var time = new Date();
     var fixture = test_generator_1.TestFixture(sampleSchema, {
-        operations: [],
         variables: { time: time }
     }).testingEnvironment({
         guid: { type: "literal", literal: guid },

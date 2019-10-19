@@ -6,7 +6,11 @@ exports.TestFixture = function (schemas, initialState) {
         operations: [],
         variables: {}
     }; }
-    var currentState = initialState;
+    var currentState = {
+        operations: initialState.operations || [],
+        testName: initialState.testName,
+        variables: initialState.variables || {}
+    };
     var setVariable = function (generatedType, variableName) {
         currentState.variables = utils_1.setNested(currentState.variables, variableName, generatedType);
     };

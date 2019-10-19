@@ -79,12 +79,16 @@ export const TestFixture = <
   EndpointType extends string
 >(
   schemas: { [schemaName: string]: Schema },
-  initialState: FixtureState<DatabaseType, ResponseType> = {
+  initialState: Partial<FixtureState<DatabaseType, ResponseType>> = {
     operations: [],
     variables: {}
   }
 ): Fixture<SchemaType, DatabaseType, ResponseType, EndpointType> => {
-  const currentState = initialState;
+  const currentState: FixtureState<DatabaseType, ResponseType> = {
+    operations: initialState.operations || [],
+    testName: initialState.testName,
+    variables: initialState.variables || {}
+  };
 
   const setVariable = (generatedType: any, variableName: string) => {
     currentState.variables = setNested(
