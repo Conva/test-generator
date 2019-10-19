@@ -50,7 +50,7 @@ const operationToCode = <DatabaseType extends string, ResponseType extends {}>(
       return `\n${testBodySpaces}testController "${assetFilePath}"`;
     }
     case "comment": {
-      return `\n${testBodySpaces}// ${operation.comment}"`;
+      return `\n${testBodySpaces}// ${operation.comment}`;
     }
 
     case "environment": {

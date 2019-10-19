@@ -47,7 +47,7 @@ var operationToCode = function (operation, _a) {
             return "\n" + testBodySpaces + "testController \"" + assetFilePath + "\"";
         }
         case "comment": {
-            return "\n" + testBodySpaces + "// " + operation.comment + "\"";
+            return "\n" + testBodySpaces + "// " + operation.comment;
         }
         case "environment": {
             var _b = operation.environment, time_1 = _b.time, guid_1 = _b.guid;
