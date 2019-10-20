@@ -86,7 +86,7 @@ test("send object get", () => {
     testName: "SampleTest"
   }).send(
     {
-      endpoint: "/endpoint/url/{variableParam}/{literalParam}",
+      endpoint: "endpoint/url/{variableParam}/{literalParam}",
       type: "GET",
       parameters: {
         literalParam: { literal: "literalParam", type: "literal" },
@@ -116,7 +116,7 @@ test("send object get", () => {
       {
         operationType: "controller",
         type: "GET",
-        endpoint: "/endpoint/url/variableParam/literalParam",
+        endpoint: "endpoint/url/variableParam/literalParam",
         expected: {
           body: {
             OkResponse: { SetCodeIsAllGood: { Other: "Hello" } }

@@ -1,6 +1,6 @@
 {
   "name": "test-generator",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "",
   "main": "build/test-generator.js",
   "module": "build/test-generator.js",

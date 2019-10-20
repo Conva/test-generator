@@ -87,7 +87,7 @@ exports.TestFixture = function (schemas, initialState) {
                 var parameter = parameters[parameterName];
                 if (parameter) {
                     var parameterValue = utils_1.getParameterValue(parameter, currentState);
-                    endpoint = endpoint.replace("{" + parameterValue + "}", parameterValue);
+                    endpoint = endpoint.replace("{" + parameterName + "}", parameterValue);
                 }
                 else {
                     throw new Error("Invalid parameter name " + parameter);

@@ -193,7 +193,7 @@ export const TestFixture = <
             parameter,
             currentState
           );
-          endpoint = endpoint.replace(`{${parameterValue}}`, parameterValue);
+          endpoint = endpoint.replace(`{${parameterName}}`, parameterValue);
         } else {
           throw new Error(`Invalid parameter name ${parameter}`);
         }
