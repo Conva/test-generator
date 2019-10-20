@@ -109,8 +109,11 @@ exports.TestFixture = function (schemas, initialState) {
                 if (schema === undefined) {
                     throw new Error("Trying to populate with invalid GenType: " + operation.schema);
                 }
+                if (operation.schema === "Custom" && !operation.item) {
+                    throw new Error("item is undefined with custom schema");
+                }
                 var generatedType = operation.item
-                    ? operation.item
+                    ? operation.item(currentState)
                     : utils_1.generateType(schema, currentState, mutations);
                 if (operation.variable !== undefined) {
                     setVariable(generatedType, operation.variable);

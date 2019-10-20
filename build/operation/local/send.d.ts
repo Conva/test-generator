@@ -13,8 +13,8 @@ export declare type GetOperation<DatabaseType extends string, ResponseType exten
 export declare type PostOperation<SchemaType extends string, DatabaseType extends string, ResponseType extends {}> = {
     type: "POST";
     variable?: string;
-    schema: SchemaType;
-    item?: {};
+    schema: SchemaType | "Custom";
+    item?: (currentState: FixtureState<DatabaseType, ResponseType>) => {};
 } & SendOperationOptions<DatabaseType, ResponseType>;
 export declare type SendOperation<SchemaType extends string, DatabaseType extends string, ResponseType extends {}, EndpointType extends string> = (GetOperation<DatabaseType, ResponseType> | PostOperation<SchemaType, DatabaseType, ResponseType>) & {
     endpoint: EndpointType;

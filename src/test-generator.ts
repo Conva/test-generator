@@ -218,8 +218,12 @@ export const TestFixture = <
           );
         }
 
+        if (operation.schema === "Custom" && !operation.item){
+          throw new Error("item is undefined with custom schema")
+        }
+
         const generatedType = operation.item
-          ? operation.item
+          ? operation.item(currentState)
           : generateType(schema, currentState, mutations);
 
         if (operation.variable !== undefined) {

@@ -24,8 +24,8 @@ export type PostOperation<
 > = {
   type: "POST";
   variable?: string;
-  schema: SchemaType;
-  item?: {};
+  schema: SchemaType | "Custom";
+  item?:  (currentState: FixtureState<DatabaseType, ResponseType>) => {};
 } & SendOperationOptions<DatabaseType, ResponseType>;
 
 export type SendOperation<
