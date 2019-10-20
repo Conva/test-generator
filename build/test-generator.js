@@ -56,7 +56,10 @@ exports.TestFixture = function (schemas, initialState) {
         };
         var item;
         if (operation.schema === "Custom") {
-            item = operation.item ? operation.item(currentState) : undefined;
+            if (operation.item === undefined) {
+                throw new Error("\"item\" is undefined. Must be defined for Custom schema: " + operation.schema);
+            }
+            item = operation.item(currentState);
         }
         else {
             var schema = schemas[operation.schema];
@@ -65,16 +68,11 @@ exports.TestFixture = function (schemas, initialState) {
             }
             item = utils_1.generateType(schema, currentState, mutations);
         }
-        if (item) {
-            if (operation.database) {
-                addToDatabase(item, operation.schema, operation.database);
-            }
-            if (operation.variable) {
-                setVariable(item, operation.variable);
-            }
+        if (operation.database) {
+            addToDatabase(item, operation.schema, operation.database);
         }
-        else {
-            throw new Error("Property item is not defined with Custom schema");
+        if (operation.variable) {
+            setVariable(item, operation.variable);
         }
         return exports.TestFixture(schemas, currentState);
     };
@@ -105,24 +103,28 @@ exports.TestFixture = function (schemas, initialState) {
                 });
                 break;
             case "POST":
-                var schema = schemas[operation.schema];
-                if (schema === undefined) {
-                    throw new Error("Trying to populate with invalid GenType: " + operation.schema);
+                var item = void 0;
+                if (operation.schema === "Custom") {
+                    if (operation.item === undefined) {
+                        throw new Error("\"item\" is undefined. Must be defined for Custom schema: " + operation.schema);
+                    }
+                    item = operation.item(currentState);
                 }
-                if (operation.schema === "Custom" && !operation.item) {
-                    throw new Error("item is undefined with custom schema");
+                else {
+                    var schema = schemas[operation.schema];
+                    if (schema === undefined) {
+                        throw new Error("Trying to populate with invalid GenType: " + operation.schema);
+                    }
+                    item = utils_1.generateType(schema, currentState, mutations);
                 }
-                var generatedType = operation.item
-                    ? operation.item(currentState)
-                    : utils_1.generateType(schema, currentState, mutations);
                 if (operation.variable !== undefined) {
-                    setVariable(generatedType, operation.variable);
+                    setVariable(item, operation.variable);
                 }
                 currentState.operations.push({
                     operationType: "controller",
                     type: "POST",
                     endpoint: endpoint,
-                    postBody: generatedType,
+                    postBody: item,
                     claims: operation.claims ? operation.claims(currentState) : undefined,
                     expected: operation.expected(currentState)
                 });

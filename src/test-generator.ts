@@ -145,9 +145,15 @@ export const TestFixture = <
       });
     };
 
-    let item: undefined | {};
+    let item: {} | undefined;
+
     if (operation.schema === "Custom") {
-      item = operation.item ? operation.item(currentState) : undefined;
+      if (operation.item === undefined) {
+        throw new Error(
+          `"item" is undefined. Must be defined for Custom schema: ${operation.schema}`
+        );
+      }
+      item = operation.item(currentState);
     } else {
       const schema = schemas[operation.schema];
       if (schema === undefined) {
@@ -158,16 +164,12 @@ export const TestFixture = <
       item = generateType(schema, currentState, mutations);
     }
 
-    if (item) {
-      if (operation.database) {
-        addToDatabase(item, operation.schema, operation.database);
-      }
+    if (operation.database) {
+      addToDatabase(item, operation.schema, operation.database);
+    }
 
-      if (operation.variable) {
-        setVariable(item, operation.variable);
-      }
-    } else {
-      throw new Error("Property item is not defined with Custom schema");
+    if (operation.variable) {
+      setVariable(item, operation.variable);
     }
 
     return TestFixture(schemas, currentState);
@@ -211,29 +213,33 @@ export const TestFixture = <
         });
         break;
       case "POST":
-        const schema = schemas[operation.schema];
-        if (schema === undefined) {
-          throw new Error(
-            `Trying to populate with invalid GenType: ${operation.schema}`
-          );
-        }
+        let item: {} | undefined;
 
-        if (operation.schema === "Custom" && !operation.item){
-          throw new Error("item is undefined with custom schema")
+        if (operation.schema === "Custom") {
+          if (operation.item === undefined) {
+            throw new Error(
+              `"item" is undefined. Must be defined for Custom schema: ${operation.schema}`
+            );
+          }
+          item = operation.item(currentState);
+        } else {
+          const schema = schemas[operation.schema];
+          if (schema === undefined) {
+            throw new Error(
+              `Trying to populate with invalid GenType: ${operation.schema}`
+            );
+          }
+          item = generateType(schema, currentState, mutations);
         }
-
-        const generatedType = operation.item
-          ? operation.item(currentState)
-          : generateType(schema, currentState, mutations);
 
         if (operation.variable !== undefined) {
-          setVariable(generatedType, operation.variable);
+          setVariable(item, operation.variable);
         }
         currentState.operations.push({
           operationType: "controller",
           type: "POST",
           endpoint,
-          postBody: generatedType,
+          postBody: item,
           claims: operation.claims ? operation.claims(currentState) : undefined,
           expected: operation.expected(currentState)
         });
