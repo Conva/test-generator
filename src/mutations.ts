@@ -1,4 +1,4 @@
-export interface Mutation {
+export interface Mutation{
   from: string;
   to: MutationTo;
 }
@@ -13,5 +13,12 @@ export interface LiteralMutation {
   literal: any;
 }
 
+export interface ExpressionMutation<> {
+  type: "expression";
+  expression: (currentItem: { [key: string]: any }) => {};
+}
 
-export type MutationTo = VariableMutation | LiteralMutation;
+export type MutationTo =
+  | VariableMutation
+  | LiteralMutation
+  | ExpressionMutation;

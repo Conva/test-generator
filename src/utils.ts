@@ -25,6 +25,9 @@ export const generateType = <
       case "literal":
         generatedType = setNested(generatedType, from, to.literal);
         break;
+      case "expression":
+        generatedType = setNested(generatedType, from, to.expression(generatedType))
+        break;
       default:
         throw new Error("Mutation operation not specified");
     }
@@ -42,6 +45,7 @@ export const getParameterValue = <
   switch (parameter.type) {
     case "literal":
       return parameter.literal;
+
     case "variable":
       const nestedString = getNested(
         currentState.variables,

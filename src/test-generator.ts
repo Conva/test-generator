@@ -129,7 +129,10 @@ export const TestFixture = <
 
   const populate = (
     operation: PopulateOperation<SchemaType, DatabaseType, ResponseType>,
-    mutations: { from: string; to: MutationTo }[] = []
+    mutations: {
+      from: string;
+      to: MutationTo;
+    }[] = []
   ) => {
     const addToDatabase = (
       generatedType: {},

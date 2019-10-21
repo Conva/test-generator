@@ -27,6 +27,9 @@ exports.generateType = function (schema, currentState, mutations) {
             case "literal":
                 generatedType = exports.setNested(generatedType, from, to.literal);
                 break;
+            case "expression":
+                generatedType = exports.setNested(generatedType, from, to.expression(generatedType));
+                break;
             default:
                 throw new Error("Mutation operation not specified");
         }

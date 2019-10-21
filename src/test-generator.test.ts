@@ -176,6 +176,13 @@ test("populate both with given variable", () => {
       {
         from: ".PhoneNumber",
         to: { type: "variable", variable: ".SomeObject.Hello.World" }
+      },
+      {
+        from: ".Hello",
+        to: {
+          type: "expression",
+          expression: currentItem => currentItem["PhoneNumber"] + "Ext"
+        }
       }
     ]
   ).state;
@@ -187,14 +194,18 @@ test("populate both with given variable", () => {
       {
         operationType: "database",
         type: "add-item",
-        item: { PhoneNumber: "notOriginal", Code },
+        item: { PhoneNumber: "notOriginal", Code, Hello: "notOriginalExt" },
         schema: "PhoneVerificationInput",
         database: "SomeDatabaseName"
       }
     ],
     variables: {
       SomeObject: { Hello: { World: "notOriginal" } },
-      SomeVariableName: { PhoneNumber: "notOriginal", Code }
+      SomeVariableName: {
+        PhoneNumber: "notOriginal",
+        Code,
+        Hello: "notOriginalExt"
+      }
     }
   });
 });

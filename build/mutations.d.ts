@@ -10,4 +10,10 @@ export interface LiteralMutation {
     type: "literal";
     literal: any;
 }
-export declare type MutationTo = VariableMutation | LiteralMutation;
+export interface ExpressionMutation {
+    type: "expression";
+    expression: (currentItem: {
+        [key: string]: any;
+    }) => {};
+}
+export declare type MutationTo = VariableMutation | LiteralMutation | ExpressionMutation;
