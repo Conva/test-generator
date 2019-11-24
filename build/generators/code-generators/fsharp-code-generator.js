@@ -23,7 +23,7 @@ var operationToCode = function (operation, _a) {
                 case "add-item": {
                     var variableName = "temp" + operation.database;
                     var result = "\n" + testBodySpaces + "let " + variableName + " = Compact.deserialize<" + operation.schema + "> " + JSON.stringify(JSON.stringify(operation.item));
-                    result += "\n" + testBodySpaces + "(DatabaseService.add (Tables." + operation.database + " databaseClient) " + variableName + " None).Wait()";
+                    result += "\n" + testBodySpaces + "(DatabaseService.put (Tables." + operation.database + " databaseClient) " + variableName + " false).Wait()";
                     return result;
                 }
                 case "delete-table": {
